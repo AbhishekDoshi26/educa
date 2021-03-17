@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:educa/constants.dart';
 import 'package:educa/providers/auth_provider.dart';
 import 'package:educa/screens/home.dart';
-import 'package:educa/screens/login.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:page_transition/page_transition.dart';
