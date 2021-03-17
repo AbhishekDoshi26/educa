@@ -1,7 +1,10 @@
 import 'package:educa/constants.dart';
+import 'package:educa/providers/auth_provider.dart';
 import 'package:educa/screens/create_account.dart';
+import 'package:educa/screens/home.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -13,6 +16,14 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController _passwordController = TextEditingController();
 
   FocusNode _passwordFocus = FocusNode();
+
+  AuthProvider provider;
+
+  @override
+  void didChangeDependencies() {
+    provider = Provider.of<AuthProvider>(context);
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -152,7 +163,18 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         width: MediaQuery.of(context).size.width / 0.5,
                         child: TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            provider.login(_emailController.text,
+                                _passwordController.text);
+                            if (provider.isSuccess) {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => HomePage(),
+                                ),
+                              );
+                            }
+                          },
                           child: Text(
                             'Continue',
                             style: GoogleFonts.balooDa(

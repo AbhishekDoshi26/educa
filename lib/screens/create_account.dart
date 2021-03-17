@@ -25,6 +25,7 @@ class _RegisterState extends State<Register> {
   FocusNode _nameFocus = FocusNode();
   FocusNode _emailFocus = FocusNode();
   FocusNode _passwordFocus = FocusNode();
+  File profileImage;
 
   bool termsAccepted = false;
 
