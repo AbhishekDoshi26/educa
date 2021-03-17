@@ -1,5 +1,7 @@
 import 'package:educa/constants.dart';
+import 'package:educa/screens/create_account.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -10,6 +12,8 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
 
+  FocusNode _passwordFocus = FocusNode();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,10 +22,17 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.all(15.0),
           child: Text(
             'Create new account',
-            style: TextStyle(color: Colors.black, fontSize: 15.0),
+            style: GoogleFonts.balooDa(color: Colors.black54, fontSize: 15.0),
           ),
         ),
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Register(),
+            ),
+          );
+        },
       ),
       appBar: AppBar(
         elevation: 0,
@@ -33,10 +44,9 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               Text(
                 'Sign in',
-                style: TextStyle(
+                style: GoogleFonts.balooDa(
                   fontSize: 25,
                   color: kAppColor,
-                  fontWeight: FontWeight.bold,
                 ),
               ),
               SizedBox(
@@ -60,6 +70,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Padding(
                             padding: const EdgeInsets.only(left: 20.0),
                             child: TextFormField(
+                              autofocus: false,
+                              textInputAction: TextInputAction.next,
+                              onFieldSubmitted: (term) {
+                                FocusScope.of(context).unfocus();
+                                FocusScope.of(context)
+                                    .requestFocus(_passwordFocus);
+                              },
                               style: TextStyle(fontSize: 18.0),
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
@@ -87,8 +104,15 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Padding(
                             padding: const EdgeInsets.only(left: 20.0),
                             child: TextFormField(
+                              autofocus: false,
+                              focusNode: _passwordFocus,
+                              textInputAction: TextInputAction.done,
+                              onFieldSubmitted: (term) {
+                                _passwordFocus.unfocus();
+                              },
                               style: TextStyle(fontSize: 18.0),
                               controller: _passwordController,
+                              obscureText: true,
                               decoration: InputDecoration(
                                 hintText: 'Password',
                                 hintStyle: TextStyle(
@@ -123,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: kAppColor,
                           border: Border.all(color: kAppColor),
                           borderRadius: BorderRadius.all(
-                            Radius.circular(15),
+                            Radius.circular(10),
                           ),
                         ),
                         width: MediaQuery.of(context).size.width / 0.5,
@@ -131,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: () {},
                           child: Text(
                             'Continue',
-                            style: TextStyle(
+                            style: GoogleFonts.balooDa(
                               fontSize: 16.0,
                               color: Colors.white,
                             ),

@@ -15,12 +15,12 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     Timer(
-      Duration(seconds: 2),
+      Duration(seconds: 1),
       () => Navigator.of(context).pushReplacement(
         PageTransition(
           type: PageTransitionType.fade,
           child: LoginScreen(),
-          duration: Duration(seconds: 1),
+          duration: Duration(seconds: 2),
         ),
       ),
     );
