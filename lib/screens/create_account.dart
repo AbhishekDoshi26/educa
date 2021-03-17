@@ -126,7 +126,6 @@ class _RegisterState extends State<Register> {
         ),
         elevation: 0,
         backgroundColor: Colors.transparent,
-        toolbarHeight: 30.0,
       ),
       body: Center(
         child: Column(
@@ -305,7 +304,7 @@ class _RegisterState extends State<Register> {
                         Navigator.pop(context);
                         Fluttertoast.showToast(
                           msg: _provider.message,
-                          toastLength: Toast.LENGTH_LONG,
+                          toastLength: Toast.LENGTH_SHORT,
                           gravity: ToastGravity.BOTTOM,
                           timeInSecForIosWeb: 1,
                           backgroundColor: kAlertColor,

@@ -24,6 +24,7 @@ class AuthProvider extends ChangeNotifier {
         message = 'Wrong password provided for that user.';
         print(message);
       }
+      notifyListeners();
     }
     notifyListeners();
   }
@@ -35,11 +36,11 @@ class AuthProvider extends ChangeNotifier {
     try {
       if (file != null) {
         await firebase_storage.FirebaseStorage.instance
-            .ref('profile/${file.path.split('/').last}')
+            .ref('profile/$email.png')
             .putFile(file)
             .then((value) async {
           downloadURL = await firebase_storage.FirebaseStorage.instance
-              .ref('profile/${file.path}.png')
+              .ref('profile/$email.png')
               .getDownloadURL();
           users
               .doc(email)
@@ -48,7 +49,7 @@ class AuthProvider extends ChangeNotifier {
                 'email': email,
                 'profile_pic': downloadURL,
               })
-              .then((value) => _register(email, password))
+              .then((value) async => await _register(email, password))
               .catchError((error) => print("Failed to add user: $error"));
         });
       } else {
@@ -59,7 +60,7 @@ class AuthProvider extends ChangeNotifier {
               'email': email,
               'profile_pic': downloadURL,
             })
-            .then((value) => _register(email, password))
+            .then((value) async => await _register(email, password))
             .catchError((error) => print("Failed to add user: $error"));
       }
     } on FirebaseException catch (e) {
@@ -70,7 +71,7 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  void _register(String email, String password) async {
+  Future<void> _register(String email, String password) async {
     try {
       await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
@@ -82,15 +83,38 @@ class AuthProvider extends ChangeNotifier {
       if (e.code == 'weak-password') {
         message = 'The password provided is too weak.';
         print('The password provided is too weak.');
-        notifyListeners();
       } else if (e.code == 'email-already-in-use') {
         message = 'The account already exists for that email.';
         print('The account already exists for that email.');
-        notifyListeners();
       }
+      notifyListeners();
     } catch (e) {
       print(e);
+      isSuccess = false;
+      message = 'Server error. Please try again later.';
+      notifyListeners();
     }
     notifyListeners();
+  }
+
+  Future<void> forgotPassword(String email) async {
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      message = 'Password reset link sent to $email';
+      isSuccess = true;
+      notifyListeners();
+    } on FirebaseAuthException catch (e) {
+      isSuccess = false;
+      if (e.code == 'user-not-found') {
+        message = 'No user found for that email.';
+        print(message);
+      }
+      notifyListeners();
+    } catch (e) {
+      print(e);
+      isSuccess = false;
+      message = 'Server error. Please try again later.';
+      notifyListeners();
+    }
   }
 }

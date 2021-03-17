@@ -1,6 +1,7 @@
 import 'package:educa/constants.dart';
 import 'package:educa/providers/auth_provider.dart';
 import 'package:educa/screens/create_account.dart';
+import 'package:educa/screens/forgot_password.dart';
 import 'package:educa/screens/home.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -137,6 +138,20 @@ class _LoginScreenState extends State<LoginScreen> {
                                 suffixIcon: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: GestureDetector(
+                                    onTap: () {
+                                      FocusScope.of(context).unfocus();
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              ChangeNotifierProvider(
+                                            create: (BuildContext context) =>
+                                                AuthProvider(),
+                                            child: ForgotPassword(),
+                                          ),
+                                        ),
+                                      );
+                                    },
                                     child: Padding(
                                       padding: const EdgeInsets.only(
                                           top: 8.0, right: 5.0),
@@ -173,7 +188,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               width: MediaQuery.of(context).size.width / 0.5,
                               child: TextButton(
-                                onPressed: () async{
+                                onPressed: () async {
+                                  FocusScope.of(context).unfocus();
                                   setState(() {
                                     isButtonPressed = true;
                                   });
@@ -190,7 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     );
                                     Fluttertoast.showToast(
                                       msg: _provider.message,
-                                      toastLength: Toast.LENGTH_LONG,
+                                      toastLength: Toast.LENGTH_SHORT,
                                       gravity: ToastGravity.BOTTOM,
                                       timeInSecForIosWeb: 1,
                                       backgroundColor: kAlertColor,
