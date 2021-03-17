@@ -6,10 +6,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class AuthProvider extends ChangeNotifier {
-  bool isSuccess;
-  String message;
+  bool isSuccess = false;
+  String message = '';
 
-  void login(String email, String password) async {
+  Future<void> login(String email, String password) async {
     try {
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
@@ -28,47 +28,65 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void uploadData(
+  Future<void> uploadData(
       String fullName, String email, String password, File file) async {
-    String downloadURL;
+    String downloadURL = '';
     CollectionReference users = FirebaseFirestore.instance.collection('users');
     try {
-      await firebase_storage.FirebaseStorage.instance
-          .ref('uploads/${file.path}.png')
-          .putFile(file)
-          .then((value) async {
-        downloadURL = await firebase_storage.FirebaseStorage.instance
-            .ref('uploads/${file.path}.png')
-            .getDownloadURL();
+      if (file != null) {
+        await firebase_storage.FirebaseStorage.instance
+            .ref('profile/${file.path.split('/').last}')
+            .putFile(file)
+            .then((value) async {
+          downloadURL = await firebase_storage.FirebaseStorage.instance
+              .ref('profile/${file.path}.png')
+              .getDownloadURL();
+          users
+              .doc(email)
+              .set({
+                'full_name': fullName,
+                'email': email,
+                'profile_pic': downloadURL,
+              })
+              .then((value) => _register(email, password))
+              .catchError((error) => print("Failed to add user: $error"));
+        });
+      } else {
         users
-            .add({
+            .doc(email)
+            .set({
               'full_name': fullName,
               'email': email,
               'profile_pic': downloadURL,
             })
-            .then((value) => register(email, password))
+            .then((value) => _register(email, password))
             .catchError((error) => print("Failed to add user: $error"));
-      });
+      }
     } on FirebaseException catch (e) {
+      print(e);
       isSuccess = false;
       message = 'Server Error, Please try again later.';
+      notifyListeners();
     }
   }
 
-  void register(String email, String password) async {
+  void _register(String email, String password) async {
     try {
       await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
       message = 'User Registered Successfully';
       isSuccess = true;
+      notifyListeners();
     } on FirebaseAuthException catch (e) {
       isSuccess = false;
       if (e.code == 'weak-password') {
         message = 'The password provided is too weak.';
         print('The password provided is too weak.');
+        notifyListeners();
       } else if (e.code == 'email-already-in-use') {
         message = 'The account already exists for that email.';
         print('The account already exists for that email.');
+        notifyListeners();
       }
     } catch (e) {
       print(e);

@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:educa/constants.dart';
+import 'package:educa/providers/auth_provider.dart';
 import 'package:educa/screens/login.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:provider/provider.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -19,7 +21,9 @@ class _SplashScreenState extends State<SplashScreen> {
       () => Navigator.of(context).pushReplacement(
         PageTransition(
           type: PageTransitionType.fade,
-          child: LoginScreen(),
+          child: ChangeNotifierProvider(
+              create: (BuildContext context) => AuthProvider(),
+              child: LoginScreen()),
           duration: Duration(seconds: 2),
         ),
       ),

@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "44468614557",
+    "project_id": "educa-01",
+    "storage_bucket": "educa-01.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:44468614557:android:0be1807cdfbcbb57016b74",
+        "android_client_info": {
+          "package_name": "com.example.educa"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "44468614557-knd130ovg57a9lhmdadg1rpi8nkpt32t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.educa",
+            "certificate_hash": "bf0e62867272557a1ea52f64cd1d46d31ab037f3"
+          }
+        },
+        {
+          "client_id": "44468614557-2tr7o4286sc8ndc1d5t2f9l8gatt3vjl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCi6Z9UZowOTsZw1LW6_CQRLJkshZKGtJo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "44468614557-2tr7o4286sc8ndc1d5t2f9l8gatt3vjl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

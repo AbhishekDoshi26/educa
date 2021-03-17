@@ -5,6 +5,7 @@ import 'package:educa/screens/home.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -17,11 +18,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   FocusNode _passwordFocus = FocusNode();
 
-  AuthProvider provider;
+  AuthProvider _provider;
+  bool isButtonPressed = false;
 
   @override
   void didChangeDependencies() {
-    provider = Provider.of<AuthProvider>(context);
+    _provider = Provider.of<AuthProvider>(context);
     super.didChangeDependencies();
   }
 
@@ -40,7 +42,9 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => Register(),
+              builder: (context) => ChangeNotifierProvider(
+                  create: (BuildContext context) => AuthProvider(),
+                  child: Register()),
             ),
           );
         },
@@ -153,37 +157,70 @@ class _LoginScreenState extends State<LoginScreen> {
                       SizedBox(
                         height: 60.0,
                       ),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: kAppColor,
-                          border: Border.all(color: kAppColor),
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(10),
-                          ),
-                        ),
-                        width: MediaQuery.of(context).size.width / 0.5,
-                        child: TextButton(
-                          onPressed: () {
-                            provider.login(_emailController.text,
-                                _passwordController.text);
-                            if (provider.isSuccess) {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => HomePage(),
+                      isButtonPressed
+                          ? Center(
+                              child: CircularProgressIndicator(
+                                backgroundColor: kAppColor,
+                              ),
+                            )
+                          : Container(
+                              decoration: BoxDecoration(
+                                color: kAppColor,
+                                border: Border.all(color: kAppColor),
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(10),
                                 ),
-                              );
-                            }
-                          },
-                          child: Text(
-                            'Continue',
-                            style: GoogleFonts.balooDa(
-                              fontSize: 16.0,
-                              color: Colors.white,
+                              ),
+                              width: MediaQuery.of(context).size.width / 0.5,
+                              child: TextButton(
+                                onPressed: () async{
+                                  setState(() {
+                                    isButtonPressed = true;
+                                  });
+                                  await _provider.login(_emailController.text,
+                                      _passwordController.text);
+                                  _emailController.clear();
+                                  _passwordController.clear();
+                                  if (_provider.isSuccess) {
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => HomePage(),
+                                      ),
+                                    );
+                                    Fluttertoast.showToast(
+                                      msg: _provider.message,
+                                      toastLength: Toast.LENGTH_LONG,
+                                      gravity: ToastGravity.BOTTOM,
+                                      timeInSecForIosWeb: 1,
+                                      backgroundColor: kAlertColor,
+                                      textColor: Colors.white,
+                                      fontSize: 16.0,
+                                    );
+                                  } else {
+                                    setState(() {
+                                      isButtonPressed = false;
+                                    });
+                                    Fluttertoast.showToast(
+                                      msg: _provider.message,
+                                      toastLength: Toast.LENGTH_SHORT,
+                                      gravity: ToastGravity.BOTTOM,
+                                      timeInSecForIosWeb: 1,
+                                      backgroundColor: Colors.red,
+                                      textColor: Colors.white,
+                                      fontSize: 16.0,
+                                    );
+                                  }
+                                },
+                                child: Text(
+                                  'Continue',
+                                  style: GoogleFonts.balooDa(
+                                    fontSize: 16.0,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
