@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:educa/constants.dart';
 import 'package:educa/providers/auth_provider.dart';
+import 'package:educa/screens/account_created.dart';
 import 'package:educa/screens/terms_and_conditions.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +30,8 @@ class _RegisterState extends State<Register> {
   FocusNode _emailFocus = FocusNode();
   FocusNode _passwordFocus = FocusNode();
   File profileImage;
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   bool termsAccepted = false;
   bool isButtonPressed = false;
@@ -127,7 +130,14 @@ class _RegisterState extends State<Register> {
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
-      body: Center(
+      body: newAccount(context),
+    );
+  }
+
+  Widget newAccount(BuildContext context) {
+    return Center(
+      child: Form(
+        key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -263,79 +273,83 @@ class _RegisterState extends State<Register> {
   }
 
   Widget createButton(BuildContext context) {
-    return isButtonPressed
-        ? Center(
-            child: CircularProgressIndicator(
-              backgroundColor: kAppColor,
-            ),
-          )
-        : Container(
-            decoration: BoxDecoration(
-              color: termsAccepted ? kAppColor : Colors.grey,
-              borderRadius: BorderRadius.all(
-                Radius.circular(10),
-              ),
-            ),
-            width: MediaQuery.of(context).size.width / 1.15,
-            child: ElevatedButton(
-              style: ButtonStyle(
-                overlayColor:
-                    MaterialStateProperty.all<Color>(Colors.transparent),
-                elevation: MaterialStateProperty.all<double>(0),
-                backgroundColor: termsAccepted
-                    ? MaterialStateProperty.all<Color>(kAppColor)
-                    : MaterialStateProperty.all<Color>(Colors.grey),
-              ),
-              onPressed: termsAccepted
-                  ? () async {
-                      setState(() {
-                        isButtonPressed = true;
-                      });
-                      await _provider.uploadData(
-                        _nameController.text,
-                        _emailController.text,
-                        _passwordController.text,
-                        profileImage,
-                      );
-                      _nameController.clear();
-                      _emailController.clear();
-                      _passwordController.clear();
-                      if (_provider.isSuccess) {
-                        Navigator.pop(context);
-                        Fluttertoast.showToast(
-                          msg: _provider.message,
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.BOTTOM,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: kAlertColor,
-                          textColor: Colors.white,
-                          fontSize: 16.0,
-                        );
-                      } else {
-                        setState(() {
-                          isButtonPressed = false;
-                        });
-                        Fluttertoast.showToast(
-                          msg: _provider.message,
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.BOTTOM,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: Colors.red,
-                          textColor: Colors.white,
-                          fontSize: 16.0,
-                        );
-                      }
-                    }
-                  : null,
-              child: Text(
-                'Continue',
-                style: GoogleFonts.balooDa(
-                  fontSize: 16.0,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          );
+    return Container(
+      decoration: BoxDecoration(
+        color: termsAccepted ? kAppColor : Colors.grey,
+        borderRadius: BorderRadius.all(
+          Radius.circular(10),
+        ),
+      ),
+      width: MediaQuery.of(context).size.width / 1.15,
+      child: ElevatedButton(
+        style: ButtonStyle(
+          overlayColor: MaterialStateProperty.all<Color>(Colors.transparent),
+          elevation: MaterialStateProperty.all<double>(0),
+          backgroundColor: termsAccepted
+              ? MaterialStateProperty.all<Color>(kAppColor)
+              : MaterialStateProperty.all<Color>(Colors.grey),
+        ),
+        onPressed: termsAccepted
+            ? () {
+                onValidate();
+              }
+            : null,
+        child: Text(
+          'Continue',
+          style: GoogleFonts.balooDa(
+            fontSize: 16.0,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void onValidate() {
+    if (_formKey.currentState.validate()) {
+      setState(() {
+        isButtonPressed = true;
+      });
+      register();
+    } else {
+      setState(() {
+        _autovalidateMode = AutovalidateMode.always;
+      });
+    }
+  }
+
+  void register() async {
+    await _provider.uploadData(
+      _nameController.text,
+      _emailController.text,
+      _passwordController.text,
+      profileImage,
+    );
+    _nameController.clear();
+    _emailController.clear();
+    _passwordController.clear();
+    if (_provider.isSuccess) {
+      Navigator.pop(context);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AccountCreated(),
+        ),
+      );
+    } else {
+      setState(() {
+        isButtonPressed = false;
+      });
+      Fluttertoast.showToast(
+        msg: _provider.message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    }
   }
 
   Widget createTextFormField({
@@ -362,8 +376,11 @@ class _RegisterState extends State<Register> {
           child: Padding(
             padding: const EdgeInsets.only(left: 20.0),
             child: TextFormField(
+              validator: (value) =>
+                  value.isEmpty ? '$hintText cannot be blank' : null,
               textCapitalization: textCapitalization,
               textInputAction: textInputAction,
+              autovalidateMode: _autovalidateMode,
               focusNode: focusNode,
               style: TextStyle(fontSize: 18.0),
               controller: controller,
