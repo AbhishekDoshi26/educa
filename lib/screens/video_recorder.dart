@@ -1,10 +1,15 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:camera/camera.dart';
+import 'package:educa/constants.dart';
+import 'package:educa/models/video_model.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:thumbnails/thumbnails.dart';
 
 class VideoRecorderExample extends StatefulWidget {
   @override
@@ -16,26 +21,28 @@ class VideoRecorderExample extends StatefulWidget {
 class _VideoRecorderExampleState extends State<VideoRecorderExample> {
   CameraController controller;
   String videoPath;
-
+  String thumbnailPath;
   List<CameraDescription> cameras;
   int selectedCameraIdx;
-
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  double videoDuration = 0.0;
+  Timer timer;
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
+  TextEditingController _topicController = TextEditingController();
+  TextEditingController _titleController = TextEditingController();
+  FocusNode _topicFocus = FocusNode();
+  FocusNode _titleFocus = FocusNode();
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool isVideoRecorded = false;
 
   @override
   void initState() {
     super.initState();
-
-    // Get the listonNewCameraSelected of available cameras.
-    // Then set the first camera as selected.
     availableCameras().then((availableCameras) {
       cameras = availableCameras;
-
       if (cameras.length > 0) {
         setState(() {
           selectedCameraIdx = 0;
         });
-
         _onCameraSwitched(cameras[selectedCameraIdx]).then((void v) {});
       }
     }).catchError((err) {
@@ -44,62 +51,288 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
   }
 
   @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  void onValidate() {
+    if (_formKey.currentState.validate()) {
+      Navigator.pop(
+        context,
+        VideoModel(
+          title: _titleController.text,
+          topic: _topicController.text,
+          videoFile: File(videoPath),
+          thumbnailFile: File(thumbnailPath),
+        ),
+      );
+    } else {
+      setState(() {
+        _autovalidateMode = AutovalidateMode.onUserInteraction;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(
-        title: const Text('Camera example'),
-      ),
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            child: Container(
-              child: Padding(
-                padding: const EdgeInsets.all(1.0),
-                child: Center(
-                  child: _cameraPreviewWidget(),
-                ),
-              ),
-              decoration: BoxDecoration(
-                color: Colors.black,
-                border: Border.all(
-                  color: controller != null && controller.value.isRecordingVideo
-                      ? Colors.redAccent
-                      : Colors.grey,
-                  width: 3.0,
-                ),
-              ),
-            ),
+    return WillPopScope(
+      onWillPop: () {
+        if (videoPath == null) Navigator.pop(context,null);
+        Navigator.pop(
+          context,
+          VideoModel(
+            title: _titleController.text,
+            topic: _topicController.text,
+            videoFile: File(videoPath),
+            thumbnailFile: File(thumbnailPath),
           ),
-          Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[
-                _cameraTogglesRowWidget(),
-                _captureControlRowWidget(),
-                Expanded(
-                  child: SizedBox(),
-                ),
-              ],
-            ),
-          ),
-        ],
+        );
+        return;
+      },
+      child: Scaffold(
+        body: isVideoRecorded
+            ? videoDetailScreen(context)
+            : videoRecordingScreen(context),
       ),
     );
   }
 
-  IconData _getCameraLensIcon(CameraLensDirection direction) {
-    switch (direction) {
-      case CameraLensDirection.back:
-        return Icons.camera_rear;
-      case CameraLensDirection.front:
-        return Icons.camera_front;
-      case CameraLensDirection.external:
-        return Icons.camera;
-      default:
-        return Icons.device_unknown;
-    }
+  Widget videoRecordingScreen(BuildContext context) {
+    return Stack(
+      children: <Widget>[
+        Expanded(
+          child: Container(
+            height: double.infinity,
+            child: _cameraPreviewWidget(),
+            decoration: BoxDecoration(
+              color: Colors.black,
+              border: Border.all(
+                color: controller != null && controller.value.isRecordingVideo
+                    ? Colors.redAccent
+                    : Colors.transparent,
+                width: 3.0,
+              ),
+            ),
+          ),
+        ),
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(40.0),
+            child: LinearProgressIndicator(
+              backgroundColor: Colors.white,
+              valueColor: AlwaysStoppedAnimation<Color>(kAppColor),
+              value: videoDuration,
+            ),
+          ),
+        ),
+        Positioned.fill(
+          top: MediaQuery.of(context).size.height / 2,
+          left: MediaQuery.of(context).size.width / 5,
+          child: Align(
+            alignment: Alignment.center,
+            child: _captureControlRowWidget(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget videoDetailScreen(BuildContext context) {
+    return Stack(
+      children: [
+        Container(
+          height: double.infinity,
+          width: double.infinity,
+          child: Image.file(
+            File(thumbnailPath),
+            fit: BoxFit.fill,
+          ),
+        ),
+        Scaffold(
+          backgroundColor: Colors.transparent,
+          body: ListView(
+            reverse: true,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20.0),
+                    topRight: Radius.circular(20.0),
+                  ),
+                ),
+                width: double.infinity,
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: 50.0,
+                    right: 50.0,
+                    bottom: 50.0,
+                    top: 20.0,
+                  ),
+                  child: Container(
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    isVideoRecorded = false;
+                                  });
+                                },
+                                child: Text(
+                                  'Retake',
+                                  style: GoogleFonts.balooDa(
+                                    fontSize: 20.0,
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
+                          SizedBox(
+                            height: 20.0,
+                          ),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Topic',
+                              style: GoogleFonts.balooDa(
+                                color: kAppColor,
+                                fontSize: 16.0,
+                              ),
+                            ),
+                          ),
+                          createTextFormField(
+                            controller: _topicController,
+                            hintText: 'Topic',
+                            obscureText: false,
+                            keyboardType: TextInputType.name,
+                            focusNode: _topicFocus,
+                            textCapitalization: TextCapitalization.words,
+                            textInputAction: TextInputAction.next,
+                            onFieldSubmitted: (value) {
+                              _topicFocus.unfocus();
+                              FocusScope.of(context).requestFocus(_titleFocus);
+                            },
+                          ),
+                          SizedBox(
+                            height: 20.0,
+                          ),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Title',
+                              style: GoogleFonts.balooDa(
+                                color: kAppColor,
+                                fontSize: 16.0,
+                              ),
+                            ),
+                          ),
+                          createTextFormField(
+                            controller: _titleController,
+                            hintText: 'Title',
+                            obscureText: false,
+                            keyboardType: TextInputType.name,
+                            focusNode: _titleFocus,
+                            textCapitalization: TextCapitalization.words,
+                            textInputAction: TextInputAction.done,
+                            onFieldSubmitted: (value) {
+                              _topicFocus.unfocus();
+                            },
+                          ),
+                          SizedBox(
+                            height: 100.0,
+                          ),
+                          createButton(context),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget createButton(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: kAppColor,
+        borderRadius: BorderRadius.all(
+          Radius.circular(10),
+        ),
+      ),
+      width: MediaQuery.of(context).size.width / 1.15,
+      child: ElevatedButton(
+        style: ButtonStyle(
+            overlayColor: MaterialStateProperty.all<Color>(Colors.transparent),
+            elevation: MaterialStateProperty.all<double>(0),
+            backgroundColor: MaterialStateProperty.all<Color>(kAppColor)),
+        onPressed: () {
+          onValidate();
+        },
+        child: Text(
+          'Upload',
+          style: GoogleFonts.balooDa(
+            fontSize: 16.0,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget createTextFormField({
+    String hintText,
+    TextEditingController controller,
+    TextInputType keyboardType,
+    bool obscureText,
+    FocusNode focusNode,
+    Function(String term) onFieldSubmitted,
+    TextInputAction textInputAction,
+    TextCapitalization textCapitalization,
+  }) {
+    return Container(
+      height: 60.0,
+      decoration: BoxDecoration(
+        border: Border.all(color: kAppColor),
+        borderRadius: BorderRadius.all(
+          Radius.circular(15),
+        ),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.only(left: 20.0),
+          child: TextFormField(
+            validator: (value) =>
+                value.isEmpty ? '$hintText cannot be blank' : null,
+            textCapitalization: textCapitalization,
+            textInputAction: textInputAction,
+            autovalidateMode: _autovalidateMode,
+            focusNode: focusNode,
+            style: TextStyle(fontSize: 18.0),
+            controller: controller,
+            keyboardType: keyboardType,
+            obscureText: obscureText,
+            onFieldSubmitted: onFieldSubmitted,
+            decoration: InputDecoration(
+              hintText: hintText,
+              hintStyle: TextStyle(
+                color: Colors.grey,
+              ),
+              border: InputBorder.none,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   // Display 'Loading' text when the camera is still loading.
@@ -118,57 +351,77 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
     return CameraPreview(controller);
   }
 
-  /// Display a row of toggle to select the camera (or a message if no camera is available).
-  Widget _cameraTogglesRowWidget() {
+  Widget _captureControlRowWidget() {
     if (cameras == null) {
       return Row();
     }
 
-    CameraDescription selectedCamera = cameras[selectedCameraIdx];
-    CameraLensDirection lensDirection = selectedCamera.lensDirection;
-
-    return Expanded(
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: TextButton.icon(
-            onPressed: _onSwitchCamera,
-            icon: Icon(_getCameraLensIcon(lensDirection)),
-            label: Text(
-                "${lensDirection.toString().substring(lensDirection.toString().indexOf('.') + 1)}")),
-      ),
-    );
-  }
-
-  /// Display the control bar with buttons to record videos.
-  Widget _captureControlRowWidget() {
-    return Expanded(
-      child: Align(
-        alignment: Alignment.center,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          mainAxisSize: MainAxisSize.max,
-          children: <Widget>[
-            IconButton(
-              icon: const Icon(Icons.videocam),
-              color: Colors.blue,
-              onPressed: controller != null &&
-                      controller.value.isInitialized &&
-                      !controller.value.isRecordingVideo
-                  ? _onRecordButtonPressed
-                  : null,
+    return Row(
+      children: <Widget>[
+        ClipRRect(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(15),
+            bottomLeft: Radius.circular(15),
+          ),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 30.0, sigmaY: 30.0),
+            child: Container(
+              width: 80.0,
+              child: IconButton(
+                onPressed: () {
+                  _onMicSwitched(!controller.enableAudio);
+                },
+                icon: Icon(
+                  controller.enableAudio ? Icons.mic : Icons.mic_off,
+                  color: Colors.white,
+                ),
+              ),
             ),
-            IconButton(
-              icon: const Icon(Icons.stop),
-              color: Colors.red,
-              onPressed: controller != null &&
-                      controller.value.isInitialized &&
-                      controller.value.isRecordingVideo
-                  ? _onStopButtonPressed
-                  : null,
-            )
-          ],
+          ),
         ),
-      ),
+        AnimatedContainer(
+          duration: Duration(seconds: 1),
+          height: 60.0,
+          width: 55.0,
+          decoration: BoxDecoration(
+            border: Border.all(color: kAppColor),
+            color: kAppColor,
+            borderRadius: BorderRadius.all(
+              Radius.circular(5),
+            ),
+          ),
+          child: IconButton(
+            color: Colors.white,
+            icon: Icon(controller.value.isRecordingVideo
+                ? Icons.stop
+                : Icons.videocam),
+            onPressed: controller != null && controller.value.isInitialized
+                ? !controller.value.isRecordingVideo
+                    ? _onRecordButtonPressed
+                    : _onStopButtonPressed
+                : null,
+          ),
+        ),
+        ClipRRect(
+          borderRadius: BorderRadius.only(
+            topRight: Radius.circular(15),
+            bottomRight: Radius.circular(15),
+          ),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
+            child: Container(
+              width: 80.0,
+              child: IconButton(
+                onPressed: _onSwitchCamera,
+                icon: Icon(
+                  Icons.refresh,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -209,6 +462,46 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
     }
   }
 
+  Future<void> _onMicSwitched(bool mic) async {
+    CameraDescription cameraDescription = cameras[selectedCameraIdx];
+    if (controller != null) {
+      await controller.dispose();
+    }
+
+    controller = CameraController(cameraDescription, ResolutionPreset.high,
+        enableAudio: mic);
+
+    // If the controller is updated then update the UI.
+    controller.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+
+      if (controller.value.hasError) {
+        Fluttertoast.showToast(
+            msg: 'Camera error ${controller.value.errorDescription}',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white);
+      }
+    });
+
+    try {
+      await controller.initialize();
+    } on CameraException catch (e) {
+      _showCameraException(e);
+    }
+
+    if (mounted) {
+      setState(() {});
+    }
+    setState(() {
+      selectedCameraIdx = selectedCameraIdx;
+    });
+  }
+
   void _onSwitchCamera() {
     selectedCameraIdx =
         selectedCameraIdx < cameras.length - 1 ? selectedCameraIdx + 1 : 0;
@@ -225,26 +518,53 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
     _startVideoRecording().then((String filePath) {
       if (filePath != null) {
         Fluttertoast.showToast(
-            msg: 'Recording video started',
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.CENTER,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.grey,
-            textColor: Colors.white);
+          msg: 'Recording video started',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: kAlertColor,
+          textColor: Colors.white,
+        );
+        timer = Timer.periodic(Duration(seconds: 1), (period) {
+          setState(() {
+            videoDuration += 0.01;
+          });
+        });
       }
     });
   }
 
   void _onStopButtonPressed() async {
+    setState(() {
+      timer.cancel();
+      videoDuration = 0.0;
+    });
     await _stopVideoRecording().then((_) {
       if (mounted) setState(() {});
       Fluttertoast.showToast(
-          msg: 'Video recorded to $videoPath',
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.grey,
-          textColor: Colors.white);
+        msg: 'Video recorded to $videoPath',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: kAlertColor,
+        textColor: Colors.white,
+      );
+    });
+    final Directory extDir = Platform.isAndroid
+        ? await getExternalStorageDirectory()
+        : await getApplicationDocumentsDirectory();
+
+    final String thumbnailDirPath = '${extDir.path}/Thumbnails';
+    await Directory(thumbnailDirPath).create(recursive: true);
+    String thumbnailFilePath = await Thumbnails.getThumbnail(
+      thumbnailFolder: thumbnailDirPath,
+      videoFile: videoPath,
+      imageType: ThumbFormat.PNG,
+      quality: 30,
+    );
+    setState(() {
+      thumbnailPath = thumbnailFilePath;
+      isVideoRecorded = true;
     });
   }
 
@@ -293,6 +613,10 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
       final String dirPath = '${extDir.path}/Movies';
       await Directory(dirPath).create(recursive: true);
       final String filePath = '$dirPath/educa_$_time.mp4';
+
+      setState(() {
+        videoPath = filePath;
+      });
       us.copySync(filePath);
     } catch (e) {
       print(e);

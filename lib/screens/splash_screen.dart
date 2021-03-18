@@ -3,6 +3,7 @@ import 'package:educa/constants.dart';
 import 'package:educa/providers/auth_provider.dart';
 import 'package:educa/screens/login.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +17,9 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
     Timer(
       Duration(seconds: 1),
       () => Navigator.of(context).pushReplacement(

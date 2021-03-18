@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:educa/constants.dart';
-import 'package:educa/providers/auth_provider.dart';
+import 'package:educa/providers/video_provider.dart';
 import 'package:educa/screens/home.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,8 +21,8 @@ class _AccountCreatedState extends State<AccountCreated> {
       () => Navigator.of(context).pushReplacement(
         PageTransition(
           type: PageTransitionType.fade,
-          child: ChangeNotifierProvider<AuthProvider>.value(
-            value: AuthProvider(),
+          child: ChangeNotifierProvider<VideoProvider>.value(
+            value: VideoProvider(),
             child: HomePage(),
           ),
           duration: Duration(seconds: 2),

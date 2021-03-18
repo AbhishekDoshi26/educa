@@ -1,4 +1,5 @@
 import 'package:educa/providers/auth_provider.dart';
+import 'package:educa/providers/video_provider.dart';
 import 'package:educa/screens/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +18,9 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(
           create: (BuildContext context) => AuthProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (BuildContext context) => VideoProvider(),
         ),
       ],
       child: MaterialApp(

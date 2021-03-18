@@ -1,6 +1,7 @@
 import 'package:educa/constants.dart';
 import 'package:educa/models/user_model.dart';
 import 'package:educa/providers/auth_provider.dart';
+import 'package:educa/providers/video_provider.dart';
 import 'package:educa/screens/create_account.dart';
 import 'package:educa/screens/forgot_password.dart';
 import 'package:educa/screens/home.dart';
@@ -53,8 +54,8 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => ChangeNotifierProvider<AuthProvider>.value(
-            value: _provider,
+          builder: (context) => ChangeNotifierProvider<VideoProvider>.value(
+            value: VideoProvider(),
             child: HomePage(
               userModel: _userModel,
             ),
