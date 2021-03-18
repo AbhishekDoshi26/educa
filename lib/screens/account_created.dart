@@ -21,9 +21,10 @@ class _AccountCreatedState extends State<AccountCreated> {
       () => Navigator.of(context).pushReplacement(
         PageTransition(
           type: PageTransitionType.fade,
-          child: ChangeNotifierProvider(
-              create: (BuildContext context) => AuthProvider(),
-              child: HomePage()),
+          child: ChangeNotifierProvider<AuthProvider>.value(
+            value: AuthProvider(),
+            child: HomePage(),
+          ),
           duration: Duration(seconds: 2),
         ),
       ),

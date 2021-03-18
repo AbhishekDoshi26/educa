@@ -1,4 +1,5 @@
 import 'package:educa/constants.dart';
+import 'package:educa/models/user_model.dart';
 import 'package:educa/screens/chat.dart';
 import 'package:educa/screens/profile.dart';
 import 'package:educa/screens/video_recorder.dart';
@@ -7,6 +8,9 @@ import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class HomePage extends StatefulWidget {
+  final UserModel userModel;
+
+  HomePage({this.userModel});
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -39,7 +43,7 @@ class _HomePageState extends State<HomePage> {
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            'Hello, $_userName!',
+                            'Hello, ${widget.userModel.fullName.split(' ')[0]}!',
                             style: GoogleFonts.balooDa(fontSize: 20.0),
                           ),
                         ),

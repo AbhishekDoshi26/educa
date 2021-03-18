@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:educa/models/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
@@ -27,6 +28,16 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     }
     notifyListeners();
+  }
+
+  Future<UserModel> getUserData(String email) async {
+    DocumentSnapshot data =
+        await FirebaseFirestore.instance.collection("users").doc(email).get();
+    return UserModel(
+      email: data.data()['email'].toString(),
+      fullName: data.data()['full_name'].toString(),
+      profileUrl: data.data()['profile_pic'].toString(),
+    );
   }
 
   Future<void> uploadData(

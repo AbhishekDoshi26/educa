@@ -1,4 +1,5 @@
 import 'package:educa/constants.dart';
+import 'package:educa/models/user_model.dart';
 import 'package:educa/providers/auth_provider.dart';
 import 'package:educa/screens/create_account.dart';
 import 'package:educa/screens/forgot_password.dart';
@@ -45,13 +46,19 @@ class _LoginScreenState extends State<LoginScreen> {
       isButtonPressed = true;
     });
     await _provider.login(_emailController.text, _passwordController.text);
-    _emailController.clear();
-    _passwordController.clear();
     if (_provider.isSuccess) {
+      UserModel _userModel = await _provider.getUserData(_emailController.text);
+      _emailController.clear();
+      _passwordController.clear();
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => HomePage(),
+          builder: (context) => ChangeNotifierProvider<AuthProvider>.value(
+            value: _provider,
+            child: HomePage(
+              userModel: _userModel,
+            ),
+          ),
         ),
       );
       Fluttertoast.showToast(
@@ -94,9 +101,10 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ChangeNotifierProvider(
-                  create: (BuildContext context) => AuthProvider(),
-                  child: Register()),
+              builder: (context) => ChangeNotifierProvider<AuthProvider>.value(
+                value: _provider,
+                child: Register(),
+              ),
             ),
           );
         },
@@ -205,9 +213,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) =>
-                                                ChangeNotifierProvider(
-                                              create: (BuildContext context) =>
-                                                  AuthProvider(),
+                                                ChangeNotifierProvider<
+                                                    AuthProvider>.value(
+                                              value: _provider,
                                               child: ForgotPassword(),
                                             ),
                                           ),
@@ -250,13 +258,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                 width: MediaQuery.of(context).size.width / 0.5,
                                 child: TextButton(
                                   onPressed: () {
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => HomePage(),
-                                      ),
-                                    );
-                                    //onValidate();
+                                    // Navigator.pushReplacement(
+                                    //   context,
+                                    //   MaterialPageRoute(
+                                    //     builder: (context) =>
+                                    //         ChangeNotifierProvider<AuthProvider>.value(
+                                    //       value: _provider,
+                                    //       child: HomePage(),
+                                    //     ),
+                                    //   ),
+                                    // );
+                                    onValidate();
                                   },
                                   child: Text(
                                     'Continue',
