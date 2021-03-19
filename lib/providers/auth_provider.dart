@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:educa/models/update_profile_model.dart';
 import 'package:educa/models/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -38,6 +39,43 @@ class AuthProvider extends ChangeNotifier {
       fullName: data.data()['full_name'].toString(),
       profileUrl: data.data()['profile_pic'].toString(),
     );
+  }
+
+  Future<void> updateProfile(
+      bool isProfilePicUpdated, UpdateProfileModel updateProfileModel) async {
+    if (isProfilePicUpdated) {
+      String downloadURL = '';
+      CollectionReference users =
+          FirebaseFirestore.instance.collection('users');
+      try {
+        if (updateProfileModel.profilePic != null) {
+          await firebase_storage.FirebaseStorage.instance
+              .ref('profile/${updateProfileModel.email}.png')
+              .putFile(updateProfileModel.profilePic)
+              .then((value) async {
+            downloadURL = await firebase_storage.FirebaseStorage.instance
+                .ref('profile/${updateProfileModel.email}.png')
+                .getDownloadURL();
+            users.doc(updateProfileModel.email).set({
+              'full_name': updateProfileModel.fullName,
+              'email': updateProfileModel.email,
+              'profile_pic': downloadURL,
+            }).catchError((error) => print("Failed to add user: $error"));
+          });
+        } else {
+          users.doc(updateProfileModel.email).set({
+            'full_name': updateProfileModel.fullName,
+            'email': updateProfileModel.email,
+            'profile_pic': downloadURL,
+          }).catchError((error) => print("Failed to add user: $error"));
+        }
+      } on FirebaseException catch (e) {
+        print(e);
+        isSuccess = false;
+        message = 'Server Error, Please try again later.';
+        notifyListeners();
+      }
+    }
   }
 
   Future<void> uploadData(

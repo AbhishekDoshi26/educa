@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:educa/constants.dart';
 import 'package:educa/models/user_model.dart';
 import 'package:educa/models/video_model.dart';
+import 'package:educa/providers/auth_provider.dart';
 import 'package:educa/providers/video_provider.dart';
 import 'package:educa/screens/chat.dart';
 import 'package:educa/screens/profile.dart';
@@ -271,8 +272,9 @@ class _HomePageState extends State<HomePage> {
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            ProfilePage(userModel: widget.userModel),
+                        builder: (context) => ChangeNotifierProvider(
+                            create: (BuildContext context) => AuthProvider(),
+                            child: ProfilePage(userModel: widget.userModel)),
                       ),
                     ),
                   ),
