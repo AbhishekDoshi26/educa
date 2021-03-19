@@ -112,28 +112,20 @@ class AuthProvider extends ChangeNotifier {
     }
     //If profile pic is not updated i.e. if only the name is updated, directly update data in firestore.
     else {
-      await firebase_storage.FirebaseStorage.instance
+      downloadURL = await firebase_storage.FirebaseStorage.instance
           .ref('profile/${updateProfileModel.email}.png')
-          .putFile(updateProfileModel.profilePic)
-          .then((value) async {
-        downloadURL = await firebase_storage.FirebaseStorage.instance
-            .ref('profile/${updateProfileModel.email}.png')
-            .getDownloadURL();
-      }).then(
-        (value) => {
-          users.doc(updateProfileModel.email).set(
-            {
-              'full_name': updateProfileModel.fullName,
-              'email': updateProfileModel.email,
-              'profile_pic': downloadURL,
-            },
-          ).catchError((error) {
-            isSuccess = false;
-            message = Messages.kServerError;
-            notifyListeners();
-          })
+          .getDownloadURL();
+      users.doc(updateProfileModel.email).set(
+        {
+          'full_name': updateProfileModel.fullName,
+          'email': updateProfileModel.email,
+          'profile_pic': downloadURL,
         },
-      );
+      ).catchError((error) {
+        isSuccess = false;
+        message = Messages.kServerError;
+        notifyListeners();
+      });
     }
   }
 
