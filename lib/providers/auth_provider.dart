@@ -112,9 +112,10 @@ class AuthProvider extends ChangeNotifier {
     }
     //If profile pic is not updated i.e. if only the name is updated, directly update data in firestore.
     else {
-      downloadURL = await firebase_storage.FirebaseStorage.instance
-          .ref('profile/${updateProfileModel.email}.png')
-          .getDownloadURL();
+      if (updateProfileModel.profilePic != null)
+        downloadURL = await firebase_storage.FirebaseStorage.instance
+            .ref('profile/${updateProfileModel.email}.png')
+            .getDownloadURL();
       users.doc(updateProfileModel.email).set(
         {
           'full_name': updateProfileModel.fullName,
