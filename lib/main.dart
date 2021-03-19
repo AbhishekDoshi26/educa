@@ -1,3 +1,4 @@
+import 'package:educa/constants.dart';
 import 'package:educa/providers/auth_provider.dart';
 import 'package:educa/providers/video_provider.dart';
 import 'package:educa/screens/splash_screen.dart';
@@ -16,6 +17,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        //AuthProvider is used in Login, Create Account, Forgot Password and Profile Page
+        //VideoProvider is used in Home Page.
         ChangeNotifierProvider(
           create: (BuildContext context) => AuthProvider(),
         ),
@@ -25,7 +28,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'educa',
+        title: AppStrings.kAppTitle,
         home: SplashScreen(),
       ),
     );

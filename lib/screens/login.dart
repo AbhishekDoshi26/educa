@@ -31,6 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.didChangeDependencies();
   }
 
+  //Validates if user has filled the values.
   void onValidate() {
     if (_formKey.currentState.validate()) {
       login();
@@ -67,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,
-        backgroundColor: kAlertColor,
+        backgroundColor: AppColors.kAlertColor,
         textColor: Colors.white,
         fontSize: 16.0,
       );
@@ -94,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Padding(
           padding: const EdgeInsets.all(15.0),
           child: Text(
-            'Create new account',
+            AppPageTitles.kCreateNewAccount,
             style: GoogleFonts.balooDa(color: Colors.black54, fontSize: 15.0),
           ),
         ),
@@ -121,10 +122,10 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               children: [
                 Text(
-                  'Sign in',
+                  AppPageTitles.kSignIn,
                   style: GoogleFonts.balooDa(
                     fontSize: 25,
-                    color: kAppColor,
+                    color: AppColors.kAppColor,
                   ),
                 ),
                 SizedBox(

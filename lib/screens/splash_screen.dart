@@ -17,6 +17,9 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+
+    //This is done so that if previously the user has rotated the screen for video,
+    //the entire app won't be havin that orientation. (For the safer side)
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
@@ -38,10 +41,10 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kAppColor,
+      backgroundColor: AppColors.kAppColor,
       body: Center(
         child: Text(
-          'educa',
+          AppStrings.kAppTitle,
           style: GoogleFonts.balooDa(
             color: Colors.white,
             fontSize: 50,

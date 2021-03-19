@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:educa/constants.dart';
+import 'package:educa/models/new_account_model.dart';
 import 'package:educa/providers/auth_provider.dart';
 import 'package:educa/screens/account_created.dart';
 import 'package:educa/screens/terms_and_conditions.dart';
@@ -320,10 +321,12 @@ class _RegisterState extends State<Register> {
 
   void register() async {
     await _provider.uploadData(
-      _nameController.text,
-      _emailController.text,
-      _passwordController.text,
-      profileImage,
+      accountModel: AccountModel(
+        email: _emailController.text,
+        fullName: _nameController.text,
+        password: _passwordController.text,
+        profilePic: profileImage,
+      ),
     );
     _nameController.clear();
     _emailController.clear();
