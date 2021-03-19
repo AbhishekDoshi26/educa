@@ -1,6 +1,6 @@
 name: educa
 description: A new Flutter project.
-publish_to: 'none'
+publish_to: "none"
 version: 1.0.0+1
 
 environment:
@@ -9,20 +9,20 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  camera: ^0.8.0
-  cloud_firestore: ^1.0.1
-  cupertino_icons: ^1.0.2
-  firebase_auth: ^1.0.1
-  firebase_core: ^1.0.1
-  firebase_storage: ^8.0.0
+  camera: ^0.7.0
+  cloud_firestore: ^0.16.0
+  cupertino_icons: ^1.0.0
+  firebase_auth: ^0.20.1
+  firebase_core: ^0.7.0
+  firebase_storage: ^7.0.0
   fluttertoast: ^7.1.8
-  google_fonts: ^2.0.0
-  image_picker: ^0.7.3
+  google_fonts: ^1.1.2
+  image_picker: ^0.6.7
   page_transition: ^1.1.7+6
-  provider: ^5.0.0
+  provider: ^4.3.3
   thumbnails: ^1.0.1
   video_compress: ^2.1.1
-  video_player: ^2.0.2
+  video_player: ^1.0.0
 
 dev_dependencies:
   flutter_test:

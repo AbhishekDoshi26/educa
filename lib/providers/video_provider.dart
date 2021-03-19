@@ -66,7 +66,10 @@ class VideoProvider extends ChangeNotifier {
           });
         });
       } else {
-        throw FirebaseException(plugin: 'no-file');
+        throw FirebaseException(
+          plugin: 'no-file',
+          message: Messages.kNoVideoUploaded,
+        );
       }
     } on FirebaseException catch (e) {
       print(e);

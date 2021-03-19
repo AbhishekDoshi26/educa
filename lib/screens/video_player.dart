@@ -46,7 +46,7 @@ class _FullScreenVideoPlayerState extends State<FullScreenVideoPlayer> {
         return;
       },
       child: Scaffold(
-        body: !_videoPlayerController.value.isInitialized ||
+        body: !_videoPlayerController.value.initialized ||
                 _videoPlayerController.value.isBuffering
             ? Center(
                 child: CircularProgressIndicator(),
