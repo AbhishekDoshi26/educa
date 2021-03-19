@@ -11,9 +11,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class ProfilePage extends StatefulWidget {
-  final UserModel userModel;
+  final String email;
 
-  ProfilePage({this.userModel});
+  ProfilePage({this.email});
   @override
   _ProfilePageState createState() => _ProfilePageState();
 }
@@ -31,18 +31,33 @@ class _ProfilePageState extends State<ProfilePage> {
   bool isProfilePicUpdated = false;
   bool isButtonPressed = false;
   AuthProvider _authProvider;
+  UserModel _userModel;
+  bool isInitial = true;
+  bool isResetClicked = false;
 
   @override
   void initState() {
-    _profile = Image.network(widget.userModel.profileUrl);
-    _nameController.text = widget.userModel.fullName;
-    _emailController.text = widget.userModel.email;
     super.initState();
+  }
+
+  void getInitialData() async {
+    if (mounted && isInitial) {
+      setState(() {
+        isInitial = false;
+      });
+      _authProvider = Provider.of<AuthProvider>(context);
+      _userModel = await _authProvider.getUserData(widget.email);
+      if (_authProvider.isSuccess) {
+        _profile = Image.network(_userModel.profileUrl);
+        _nameController.text = _userModel.fullName;
+        _emailController.text = _userModel.email;
+      }
+    }
   }
 
   @override
   void didChangeDependencies() {
-    _authProvider = Provider.of<AuthProvider>(context);
+    getInitialData();
     super.didChangeDependencies();
   }
 
@@ -66,6 +81,7 @@ class _ProfilePageState extends State<ProfilePage> {
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               'Profile',
@@ -74,64 +90,92 @@ class _ProfilePageState extends State<ProfilePage> {
                 fontSize: 25.0,
               ),
             ),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: 40.0,
+            _userModel == null
+                ? Expanded(
+                    child: Center(
+                      child: CircularProgressIndicator(),
                     ),
-                    createProfilePicture(context),
-                    SizedBox(
-                      height: 50.0,
+                  )
+                : Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            height: 40.0,
+                          ),
+                          createProfilePicture(context),
+                          SizedBox(
+                            height: 50.0,
+                          ),
+                          createTextFormField(
+                            controller: _nameController,
+                            hintText: 'Name',
+                            keyboardType: TextInputType.name,
+                            obscureText: false,
+                            focusNode: _nameFocus,
+                            textInputAction: TextInputAction.next,
+                            textCapitalization: TextCapitalization.words,
+                            readOnly: false,
+                            onFieldSubmitted: (term) {
+                              _nameFocus.unfocus();
+                              FocusScope.of(context).requestFocus(_emailFocus);
+                            },
+                          ),
+                          SizedBox(
+                            height: 20.0,
+                          ),
+                          createTextFormField(
+                            controller: _emailController,
+                            hintText: 'Email Address',
+                            keyboardType: TextInputType.emailAddress,
+                            obscureText: false,
+                            focusNode: _emailFocus,
+                            textInputAction: TextInputAction.next,
+                            textCapitalization: TextCapitalization.none,
+                            readOnly: true,
+                            onFieldSubmitted: (term) {
+                              _emailFocus.unfocus();
+                              FocusScope.of(context)
+                                  .requestFocus(_passwordFocus);
+                            },
+                          ),
+                          SizedBox(
+                            height: 80.0,
+                          ),
+                          isButtonPressed
+                              ? Center(
+                                  child: CircularProgressIndicator(),
+                                )
+                              : createButton(context),
+                          SizedBox(
+                            height: 20.0,
+                          ),
+                          createPasswordResetButton(),
+                        ],
+                      ),
                     ),
-                    createTextFormField(
-                      controller: _nameController,
-                      hintText: 'Name',
-                      keyboardType: TextInputType.name,
-                      obscureText: false,
-                      focusNode: _nameFocus,
-                      textInputAction: TextInputAction.next,
-                      textCapitalization: TextCapitalization.words,
-                      readOnly: false,
-                      onFieldSubmitted: (term) {
-                        _nameFocus.unfocus();
-                        FocusScope.of(context).requestFocus(_emailFocus);
-                      },
-                    ),
-                    SizedBox(
-                      height: 20.0,
-                    ),
-                    createTextFormField(
-                      controller: _emailController,
-                      hintText: 'Email Address',
-                      keyboardType: TextInputType.emailAddress,
-                      obscureText: false,
-                      focusNode: _emailFocus,
-                      textInputAction: TextInputAction.next,
-                      textCapitalization: TextCapitalization.none,
-                      readOnly: true,
-                      onFieldSubmitted: (term) {
-                        _emailFocus.unfocus();
-                        FocusScope.of(context).requestFocus(_passwordFocus);
-                      },
-                    ),
-                    SizedBox(
-                      height: 80.0,
-                    ),
-                    isButtonPressed
-                        ? Center(
-                            child: CircularProgressIndicator(),
-                          )
-                        : createButton(context),
-                  ],
-                ),
-              ),
-            ),
+                  ),
           ],
         ),
       ),
     );
+  }
+
+  Widget createPasswordResetButton() {
+    return isResetClicked
+        ? Center(
+            child: CircularProgressIndicator(),
+          )
+        : TextButton(
+            onPressed: () => resetPassword(),
+            child: Text(
+              'Reset Password ?',
+              style: GoogleFonts.balooDa(
+                color: kAppColor,
+                fontSize: 15.0,
+              ),
+            ),
+          );
   }
 
   Widget createTextFormField({
@@ -166,7 +210,10 @@ class _ProfilePageState extends State<ProfilePage> {
               textInputAction: textInputAction,
               autovalidateMode: _autovalidateMode,
               focusNode: focusNode,
-              style: TextStyle(fontSize: 18.0),
+              style: TextStyle(
+                fontSize: 18.0,
+                color: readOnly ? Colors.grey : Colors.black,
+              ),
               controller: controller,
               keyboardType: keyboardType,
               obscureText: obscureText,
@@ -236,6 +283,35 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  void resetPassword() async {
+    setState(() {
+      isResetClicked = true;
+    });
+    await _authProvider.forgotPassword(_emailController.text);
+    if (_authProvider.isSuccess) {
+      Fluttertoast.showToast(
+        msg: _authProvider.message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: kAlertColor,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+      Navigator.pop(context);
+    } else {
+      Fluttertoast.showToast(
+        msg: _authProvider.message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    }
+  }
+
   void setProfileImage(ImageSource source) async {
     Navigator.pop(context);
     final picker = ImagePicker();
@@ -260,10 +336,10 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget createButton(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: isProfilePicUpdated ||
-                widget.userModel.fullName != _nameController.text
-            ? kAppColor
-            : Colors.grey,
+        color:
+            isProfilePicUpdated || _userModel.fullName != _nameController.text
+                ? kAppColor
+                : Colors.grey,
         borderRadius: BorderRadius.all(
           Radius.circular(10),
         ),
@@ -273,17 +349,17 @@ class _ProfilePageState extends State<ProfilePage> {
         style: ButtonStyle(
           overlayColor: MaterialStateProperty.all<Color>(Colors.transparent),
           elevation: MaterialStateProperty.all<double>(0),
-          backgroundColor: isProfilePicUpdated ||
-                  widget.userModel.fullName != _nameController.text
-              ? MaterialStateProperty.all<Color>(kAppColor)
-              : MaterialStateProperty.all<Color>(Colors.grey),
+          backgroundColor:
+              isProfilePicUpdated || _userModel.fullName != _nameController.text
+                  ? MaterialStateProperty.all<Color>(kAppColor)
+                  : MaterialStateProperty.all<Color>(Colors.grey),
         ),
-        onPressed: isProfilePicUpdated ||
-                widget.userModel.fullName != _nameController.text
-            ? () {
-                onValidate();
-              }
-            : null,
+        onPressed:
+            isProfilePicUpdated || _userModel.fullName != _nameController.text
+                ? () {
+                    onValidate();
+                  }
+                : null,
         child: Text(
           'Update Profile',
           style: GoogleFonts.balooDa(

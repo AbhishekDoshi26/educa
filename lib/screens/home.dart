@@ -273,8 +273,9 @@ class _HomePageState extends State<HomePage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => ChangeNotifierProvider(
-                            create: (BuildContext context) => AuthProvider(),
-                            child: ProfilePage(userModel: widget.userModel)),
+                          create: (BuildContext context) => AuthProvider(),
+                          child: ProfilePage(email: widget.userModel.email),
+                        ),
                       ),
                     ),
                   ),

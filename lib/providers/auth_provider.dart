@@ -34,6 +34,8 @@ class AuthProvider extends ChangeNotifier {
   Future<UserModel> getUserData(String email) async {
     DocumentSnapshot data =
         await FirebaseFirestore.instance.collection("users").doc(email).get();
+    isSuccess = true;
+    notifyListeners();
     return UserModel(
       email: data.data()['email'].toString(),
       fullName: data.data()['full_name'].toString(),
@@ -43,10 +45,9 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> updateProfile(
       bool isProfilePicUpdated, UpdateProfileModel updateProfileModel) async {
+    String downloadURL = '';
+    CollectionReference users = FirebaseFirestore.instance.collection('users');
     if (isProfilePicUpdated) {
-      String downloadURL = '';
-      CollectionReference users =
-          FirebaseFirestore.instance.collection('users');
       try {
         if (updateProfileModel.profilePic != null) {
           await firebase_storage.FirebaseStorage.instance
@@ -75,6 +76,25 @@ class AuthProvider extends ChangeNotifier {
         message = 'Server Error, Please try again later.';
         notifyListeners();
       }
+    } else {
+      await firebase_storage.FirebaseStorage.instance
+          .ref('profile/${updateProfileModel.email}.png')
+          .putFile(updateProfileModel.profilePic)
+          .then((value) async {
+        downloadURL = await firebase_storage.FirebaseStorage.instance
+            .ref('profile/${updateProfileModel.email}.png')
+            .getDownloadURL();
+      }).then(
+        (value) => {
+          users.doc(updateProfileModel.email).set(
+            {
+              'full_name': updateProfileModel.fullName,
+              'email': updateProfileModel.email,
+              'profile_pic': downloadURL,
+            },
+          ).catchError((error) => print("Failed to add user: $error"))
+        },
+      );
     }
   }
 
