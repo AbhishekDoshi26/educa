@@ -109,18 +109,16 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
   Widget videoRecordingScreen(BuildContext context) {
     return Stack(
       children: <Widget>[
-        Expanded(
-          child: Container(
-            height: double.infinity,
-            child: _cameraPreviewWidget(),
-            decoration: BoxDecoration(
-              color: Colors.black,
-              border: Border.all(
-                color: controller != null && controller.value.isRecordingVideo
-                    ? Colors.redAccent
-                    : Colors.transparent,
-                width: 3.0,
-              ),
+        Container(
+          height: double.infinity,
+          child: _cameraPreviewWidget(),
+          decoration: BoxDecoration(
+            color: Colors.black,
+            border: Border.all(
+              color: controller != null && controller.value.isRecordingVideo
+                  ? Colors.redAccent
+                  : Colors.transparent,
+              width: 3.0,
             ),
           ),
         ),

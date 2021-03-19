@@ -69,8 +69,8 @@ class AuthProvider extends ChangeNotifier {
   }
 
   //Update Profile Functionality
-  Future<void> updateProfile(
-      bool isProfilePicUpdated, UpdateProfileModel updateProfileModel) async {
+  Future<void> updateProfile(bool isProfilePicUpdated,
+      UpdateProfileModel updateProfileModel, String profileUrl) async {
     String downloadURL = '';
     CollectionReference users = FirebaseFirestore.instance.collection('users');
 
@@ -99,7 +99,7 @@ class AuthProvider extends ChangeNotifier {
           users.doc(updateProfileModel.email).set({
             'full_name': updateProfileModel.fullName,
             'email': updateProfileModel.email,
-            'profile_pic': downloadURL,
+            'profile_pic': profileUrl,
           }).catchError((error) {
             isSuccess = false;
             notifyListeners();
@@ -122,7 +122,7 @@ class AuthProvider extends ChangeNotifier {
         {
           'full_name': updateProfileModel.fullName,
           'email': updateProfileModel.email,
-          'profile_pic': downloadURL,
+          'profile_pic': profileUrl,
         },
       ).catchError((error) {
         isSuccess = false;

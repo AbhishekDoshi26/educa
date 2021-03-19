@@ -429,12 +429,14 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void updateProfile() async {
     await _authProvider.updateProfile(
-        isProfilePicUpdated,
-        UpdateProfileModel(
-          email: _emailController.text,
-          fullName: _nameController.text,
-          profilePic: profileImage,
-        ));
+      isProfilePicUpdated,
+      UpdateProfileModel(
+        email: _emailController.text,
+        fullName: _nameController.text,
+        profilePic: profileImage,
+      ),
+      _userModel.profileUrl,
+    );
     if (_authProvider.isSuccess) {
       Navigator.pop(context);
       Fluttertoast.showToast(
