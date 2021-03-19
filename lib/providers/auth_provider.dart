@@ -35,6 +35,8 @@ class AuthProvider extends ChangeNotifier {
         message = Messages.kWrongPassword;
       }
       notifyListeners();
+    } catch (e) {
+      message = e.toString();
     }
     notifyListeners();
   }
