@@ -4,6 +4,7 @@ import 'package:educa/constants.dart';
 import 'package:educa/models/update_profile_model.dart';
 import 'package:educa/models/user_model.dart';
 import 'package:educa/providers/auth_provider.dart';
+import 'package:educa/screens/login.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -48,7 +49,14 @@ class _ProfilePageState extends State<ProfilePage> {
       _authProvider = Provider.of<AuthProvider>(context);
       _userModel = await _authProvider.getUserData(widget.email);
       if (_authProvider.isSuccess) {
-        _profile = Image.network(_userModel.profileUrl);
+        if (_userModel.profileUrl == '')
+          _profile = Image.asset(
+            AppStrings.kDefaultProfilePicPath,
+            color: Colors.grey.shade300,
+            fit: BoxFit.fill,
+          );
+        else
+          _profile = Image.network(_userModel.profileUrl);
         _nameController.text = _userModel.fullName;
         _emailController.text = _userModel.email;
       }
@@ -70,6 +78,12 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         elevation: 0,
         backgroundColor: Colors.transparent,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: logOut,
+          ),
+        ],
       ),
       body: newAccount(context),
     );
@@ -84,9 +98,9 @@ class _ProfilePageState extends State<ProfilePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Profile',
+              AppPageTitles.kProfile,
               style: GoogleFonts.balooDa(
-                color: kAppColor,
+                color: AppColors.kAppColor,
                 fontSize: 25.0,
               ),
             ),
@@ -109,7 +123,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                           createTextFormField(
                             controller: _nameController,
-                            hintText: 'Name',
+                            hintText: HintText.kNameHint,
                             keyboardType: TextInputType.name,
                             obscureText: false,
                             focusNode: _nameFocus,
@@ -126,7 +140,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                           createTextFormField(
                             controller: _emailController,
-                            hintText: 'Email Address',
+                            hintText: HintText.kEmailAddressHint,
                             keyboardType: TextInputType.emailAddress,
                             obscureText: false,
                             focusNode: _emailFocus,
@@ -169,9 +183,9 @@ class _ProfilePageState extends State<ProfilePage> {
         : TextButton(
             onPressed: () => resetPassword(),
             child: Text(
-              'Reset Password ?',
+              ButtonText.kResetPassword,
               style: GoogleFonts.balooDa(
-                color: kAppColor,
+                color: AppColors.kAppColor,
                 fontSize: 15.0,
               ),
             ),
@@ -194,7 +208,7 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Container(
         height: 60.0,
         decoration: BoxDecoration(
-          border: Border.all(color: kAppColor),
+          border: Border.all(color: AppColors.kAppColor),
           borderRadius: BorderRadius.all(
             Radius.circular(15),
           ),
@@ -239,7 +253,7 @@ class _ProfilePageState extends State<ProfilePage> {
           Radius.circular(20.0),
         ),
       ),
-      backgroundColor: kAlertColor,
+      backgroundColor: AppColors.kAlertColor,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -247,7 +261,7 @@ class _ProfilePageState extends State<ProfilePage> {
             padding: const EdgeInsets.all(8.0),
             child: ListTile(
               title: Text(
-                'Capture Image',
+                ButtonText.kCaptureImage,
                 style: GoogleFonts.balooDa(
                   color: Colors.white,
                 ),
@@ -266,7 +280,7 @@ class _ProfilePageState extends State<ProfilePage> {
             padding: const EdgeInsets.all(8.0),
             child: ListTile(
               title: Text(
-                'Select From Gallery',
+                ButtonText.kSelectFromGallery,
                 style: GoogleFonts.balooDa(
                   color: Colors.white,
                 ),
@@ -283,6 +297,27 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  void logOut() async {
+    await _authProvider.logOut().then((value) {
+      Fluttertoast.showToast(
+        msg: _authProvider.message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: AppColors.kAlertColor,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+      Navigator.pop(context);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => LoginScreen(),
+        ),
+      );
+    });
+  }
+
   void resetPassword() async {
     setState(() {
       isResetClicked = true;
@@ -294,7 +329,7 @@ class _ProfilePageState extends State<ProfilePage> {
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,
-        backgroundColor: kAlertColor,
+        backgroundColor: AppColors.kAlertColor,
         textColor: Colors.white,
         fontSize: 16.0,
       );
@@ -328,7 +363,15 @@ class _ProfilePageState extends State<ProfilePage> {
         profileImage = File(pickedFile.path);
         isProfilePicUpdated = true;
       } else {
-        print('No image selected.');
+        Fluttertoast.showToast(
+          msg: Messages.kNoProfile,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
       }
     });
   }
@@ -338,7 +381,7 @@ class _ProfilePageState extends State<ProfilePage> {
       decoration: BoxDecoration(
         color:
             isProfilePicUpdated || _userModel.fullName != _nameController.text
-                ? kAppColor
+                ? AppColors.kAppColor
                 : Colors.grey,
         borderRadius: BorderRadius.all(
           Radius.circular(10),
@@ -351,7 +394,7 @@ class _ProfilePageState extends State<ProfilePage> {
           elevation: MaterialStateProperty.all<double>(0),
           backgroundColor:
               isProfilePicUpdated || _userModel.fullName != _nameController.text
-                  ? MaterialStateProperty.all<Color>(kAppColor)
+                  ? MaterialStateProperty.all<Color>(AppColors.kAppColor)
                   : MaterialStateProperty.all<Color>(Colors.grey),
         ),
         onPressed:
@@ -361,7 +404,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   }
                 : null,
         child: Text(
-          'Update Profile',
+          ButtonText.kUpdateProfile,
           style: GoogleFonts.balooDa(
             fontSize: 16.0,
             color: Colors.white,
@@ -395,11 +438,11 @@ class _ProfilePageState extends State<ProfilePage> {
     if (_authProvider.isSuccess) {
       Navigator.pop(context);
       Fluttertoast.showToast(
-        msg: 'Profile Updated Successfully!!',
+        msg: Messages.kProfileUpdated,
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,
-        backgroundColor: kAlertColor,
+        backgroundColor: AppColors.kAlertColor,
         textColor: Colors.white,
         fontSize: 16.0,
       );
@@ -409,7 +452,7 @@ class _ProfilePageState extends State<ProfilePage> {
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,
-        backgroundColor: kAlertColor,
+        backgroundColor: AppColors.kAlertColor,
         textColor: Colors.white,
         fontSize: 16.0,
       );
@@ -430,7 +473,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 boxShadow: [
                   BoxShadow(
                     blurRadius: 8,
-                    color: kAppColor,
+                    color: AppColors.kAppColor,
                     spreadRadius: 2,
                   )
                 ],

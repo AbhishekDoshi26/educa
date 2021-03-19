@@ -35,10 +35,10 @@ class _ForgotPasswordState extends State<ForgotPassword> {
         child: Column(
           children: [
             Text(
-              'Forgot password?',
+              AppPageTitles.kForgotPassword,
               style: GoogleFonts.balooDa(
                 fontSize: 25,
-                color: kAppColor,
+                color: AppColors.kAppColor,
               ),
             ),
             SizedBox(
@@ -47,7 +47,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
             Padding(
               padding: const EdgeInsets.only(left: 20.0, right: 20.0),
               child: Text(
-                'Please enter your email address to reset password.',
+                AppStrings.kForgotPasswordPageHint,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 17,
@@ -63,7 +63,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
               child: Container(
                 height: 60.0,
                 decoration: BoxDecoration(
-                  border: Border.all(color: kAppColor),
+                  border: Border.all(color: AppColors.kAppColor),
                   borderRadius: BorderRadius.all(
                     Radius.circular(15),
                   ),
@@ -77,7 +77,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
-                        hintText: 'Email address',
+                        hintText: HintText.kEmailAddressHint,
                         hintStyle: TextStyle(
                           color: Colors.grey,
                         ),
@@ -102,12 +102,12 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     return isButtonPressed
         ? Center(
             child: CircularProgressIndicator(
-              backgroundColor: kAppColor,
+              backgroundColor: AppColors.kAppColor,
             ),
           )
         : Container(
             decoration: BoxDecoration(
-              color: kAppColor,
+              color: AppColors.kAppColor,
               borderRadius: BorderRadius.all(
                 Radius.circular(10),
               ),
@@ -118,7 +118,8 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                   overlayColor:
                       MaterialStateProperty.all<Color>(Colors.transparent),
                   elevation: MaterialStateProperty.all<double>(0),
-                  backgroundColor: MaterialStateProperty.all<Color>(kAppColor)),
+                  backgroundColor:
+                      MaterialStateProperty.all<Color>(AppColors.kAppColor)),
               onPressed: () async {
                 setState(() {
                   isButtonPressed = true;
@@ -131,7 +132,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                     toastLength: Toast.LENGTH_SHORT,
                     gravity: ToastGravity.BOTTOM,
                     timeInSecForIosWeb: 1,
-                    backgroundColor: kAlertColor,
+                    backgroundColor: AppColors.kAlertColor,
                     textColor: Colors.white,
                     fontSize: 16.0,
                   );
@@ -152,7 +153,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                 }
               },
               child: Text(
-                'Continue',
+                ButtonText.kContinue,
                 style: GoogleFonts.balooDa(
                   fontSize: 16.0,
                   color: Colors.white,

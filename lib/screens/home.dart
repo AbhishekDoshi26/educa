@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:educa/constants.dart';
-import 'package:educa/models/user_model.dart';
 import 'package:educa/models/video_model.dart';
 import 'package:educa/providers/auth_provider.dart';
 import 'package:educa/providers/video_provider.dart';
@@ -14,9 +13,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
-  final UserModel userModel;
+  final String email;
+  final String name;
 
-  HomePage({this.userModel});
+  HomePage({this.email, this.name});
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -68,7 +68,7 @@ class _HomePageState extends State<HomePage> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Hello, ${widget.userModel.fullName.split(' ')[0]}!',
+                      'Hello, ${widget.name.split(' ')[0]}!',
                       style: GoogleFonts.balooDa(fontSize: 20.0),
                     ),
                   ),
@@ -78,7 +78,7 @@ class _HomePageState extends State<HomePage> {
                   Padding(
                     padding: const EdgeInsets.only(right: 20.0),
                     child: Text(
-                      'What would you like to learn today?',
+                      AppPageTitles.kHomePageTitleContent,
                       style: GoogleFonts.balooDa(
                           fontSize: 25.0, color: Colors.grey),
                     ),
@@ -125,7 +125,7 @@ class _HomePageState extends State<HomePage> {
                     width: 20.0,
                   ),
                   Text(
-                    'Your video is uploading...',
+                    Messages.kVideoUploading,
                     style: GoogleFonts.balooDa(
                       color: Colors.white,
                       fontSize: 18.0,
@@ -135,8 +135,8 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             decoration: BoxDecoration(
-              border: Border.all(color: kAppColor),
-              color: kAlertColor,
+              border: Border.all(color: AppColors.kAppColor),
+              color: AppColors.kAlertColor,
               borderRadius: BorderRadius.all(
                 Radius.circular(15),
               ),
@@ -155,8 +155,8 @@ class _HomePageState extends State<HomePage> {
         alignment: Alignment.bottomRight,
         child: Container(
           decoration: BoxDecoration(
-            border: Border.all(color: kAppColor),
-            color: kAppColor,
+            border: Border.all(color: AppColors.kAppColor),
+            color: AppColors.kAppColor,
             borderRadius: BorderRadius.all(
               Radius.circular(10),
             ),
@@ -187,7 +187,6 @@ class _HomePageState extends State<HomePage> {
                           builder: (context) => buildAlertDialog(),
                         );
                       });
-                      print('Successfully Uploaded');
                     }
                   });
                 }
@@ -208,15 +207,15 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       title: Text(
-        'Success!',
+        Messages.kSuccess,
         textAlign: TextAlign.center,
         style: GoogleFonts.balooDa(
           color: Colors.white,
         ),
       ),
-      backgroundColor: kAlertColor,
+      backgroundColor: AppColors.kAlertColor,
       content: Text(
-        'Your video uploaded successfully!',
+        Messages.kVideoUploaded,
         textAlign: TextAlign.center,
         style: TextStyle(color: Colors.white),
       ),
@@ -253,7 +252,7 @@ class _HomePageState extends State<HomePage> {
                       Icon(
                         Icons.circle,
                         size: 6,
-                        color: kAppColor,
+                        color: AppColors.kAppColor,
                       ),
                     ],
                   ),
@@ -274,7 +273,7 @@ class _HomePageState extends State<HomePage> {
                       MaterialPageRoute(
                         builder: (context) => ChangeNotifierProvider(
                           create: (BuildContext context) => AuthProvider(),
-                          child: ProfilePage(email: widget.userModel.email),
+                          child: ProfilePage(email: widget.email),
                         ),
                       ),
                     ),
@@ -302,7 +301,7 @@ class _HomePageState extends State<HomePage> {
           else if (snapshot.data.docs.length == 0)
             return Center(
               child: new Text(
-                "There are no videos!",
+                Messages.kNoVideos,
                 style: GoogleFonts.balooDa(
                   fontSize: 20.0,
                   color: Colors.grey,
@@ -375,7 +374,7 @@ class _HomePageState extends State<HomePage> {
                                     child: Text(
                                       snapshot.data.docs[index].data()['topic'],
                                       style: GoogleFonts.balooDa(
-                                        color: kAppColor,
+                                        color: AppColors.kAppColor,
                                         fontSize: 20.0,
                                       ),
                                     ),
@@ -422,8 +421,8 @@ class _HomePageState extends State<HomePage> {
           Container(
             height: 55.0,
             decoration: BoxDecoration(
-              border: Border.all(color: kAppColor),
-              color: kAppColor,
+              border: Border.all(color: AppColors.kAppColor),
+              color: AppColors.kAppColor,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(15),
                 bottomLeft: Radius.circular(15),
@@ -439,7 +438,7 @@ class _HomePageState extends State<HomePage> {
             child: Container(
               height: 55.0,
               decoration: BoxDecoration(
-                border: Border.all(color: kAppColor),
+                border: Border.all(color: AppColors.kAppColor),
                 borderRadius: BorderRadius.only(),
               ),
               child: Center(
@@ -456,7 +455,7 @@ class _HomePageState extends State<HomePage> {
                       setState(() {});
                     },
                     decoration: InputDecoration(
-                      hintText: 'Search',
+                      hintText: HintText.kSearchHint,
                       hintStyle: TextStyle(
                         color: Colors.grey,
                       ),

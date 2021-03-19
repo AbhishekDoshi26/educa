@@ -8,6 +8,10 @@ import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
 class AccountCreated extends StatefulWidget {
+  final String email;
+  final String fullName;
+
+  const AccountCreated({this.email, this.fullName});
   @override
   _AccountCreatedState createState() => _AccountCreatedState();
 }
@@ -23,7 +27,10 @@ class _AccountCreatedState extends State<AccountCreated> {
           type: PageTransitionType.fade,
           child: ChangeNotifierProvider<VideoProvider>.value(
             value: VideoProvider(),
-            child: HomePage(),
+            child: HomePage(
+              email: widget.email,
+              name: widget.fullName,
+            ),
           ),
           duration: Duration(seconds: 2),
         ),
@@ -48,10 +55,10 @@ class _AccountCreatedState extends State<AccountCreated> {
                 height: 30.0,
               ),
               Text(
-                'Your account has been created successfully.',
+                AppPageTitles.kAccountCreated,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.balooDa(
-                  color: kAppColor,
+                  color: AppColors.kAppColor,
                   fontSize: 25.0,
                 ),
               ),
@@ -61,7 +68,7 @@ class _AccountCreatedState extends State<AccountCreated> {
               Padding(
                 padding: const EdgeInsets.only(left: 25.0, right: 25.0),
                 child: Text(
-                  'We are setting up your profile. You will be redirected in few minutes...',
+                  AppStrings.kAccountCreatedPageHint,
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.grey, fontSize: 18.0),
                 ),

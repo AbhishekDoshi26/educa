@@ -58,7 +58,8 @@ class _LoginScreenState extends State<LoginScreen> {
           builder: (context) => ChangeNotifierProvider<VideoProvider>.value(
             value: VideoProvider(),
             child: HomePage(
-              userModel: _userModel,
+              email: _userModel.email,
+              name: _userModel.fullName,
             ),
           ),
         ),
@@ -139,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Container(
                           height: 60.0,
                           decoration: BoxDecoration(
-                            border: Border.all(color: kAppColor),
+                            border: Border.all(color: AppColors.kAppColor),
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(20),
                               topRight: Radius.circular(20),
@@ -161,10 +162,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
                                 validator: (value) => value.isEmpty
-                                    ? 'Email cannot be blank'
+                                    ? Messages.kEmailIDWarning
                                     : null,
                                 decoration: InputDecoration(
-                                  hintText: 'Email address',
+                                  hintText: HintText.kEmailAddressHint,
                                   hintStyle: TextStyle(
                                     color: Colors.grey,
                                   ),
@@ -177,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Container(
                           height: 60.0,
                           decoration: BoxDecoration(
-                            border: Border.all(color: kAppColor),
+                            border: Border.all(color: AppColors.kAppColor),
                             borderRadius: BorderRadius.only(
                               bottomLeft: Radius.circular(20),
                               bottomRight: Radius.circular(20),
@@ -198,10 +199,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 controller: _passwordController,
                                 obscureText: true,
                                 validator: (value) => value.isEmpty
-                                    ? 'Password cannot be blank'
+                                    ? Messages.kPasswordWarning
                                     : null,
                                 decoration: InputDecoration(
-                                  hintText: 'Password',
+                                  hintText: HintText.kPasswordHint,
                                   hintStyle: TextStyle(
                                     color: Colors.grey,
                                   ),
@@ -227,9 +228,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                         padding: const EdgeInsets.only(
                                             top: 8.0, right: 5.0),
                                         child: Text(
-                                          'Forgot?',
+                                          HintText.kForgotPasswordHint,
                                           style: TextStyle(
-                                            color: kAppColor,
+                                            color: AppColors.kAppColor,
                                           ),
                                         ),
                                       ),
@@ -246,13 +247,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         isButtonPressed
                             ? Center(
                                 child: CircularProgressIndicator(
-                                  backgroundColor: kAppColor,
+                                  backgroundColor: AppColors.kAppColor,
                                 ),
                               )
                             : Container(
                                 decoration: BoxDecoration(
-                                  color: kAppColor,
-                                  border: Border.all(color: kAppColor),
+                                  color: AppColors.kAppColor,
+                                  border:
+                                      Border.all(color: AppColors.kAppColor),
                                   borderRadius: BorderRadius.all(
                                     Radius.circular(10),
                                   ),
@@ -260,20 +262,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 width: MediaQuery.of(context).size.width / 0.5,
                                 child: TextButton(
                                   onPressed: () {
-                                    // Navigator.pushReplacement(
-                                    //   context,
-                                    //   MaterialPageRoute(
-                                    //     builder: (context) =>
-                                    //         ChangeNotifierProvider<AuthProvider>.value(
-                                    //       value: _provider,
-                                    //       child: HomePage(),
-                                    //     ),
-                                    //   ),
-                                    // );
                                     onValidate();
                                   },
                                   child: Text(
-                                    'Continue',
+                                    ButtonText.kContinue,
                                     style: GoogleFonts.balooDa(
                                       fontSize: 16.0,
                                       color: Colors.white,

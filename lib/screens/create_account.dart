@@ -19,9 +19,9 @@ class Register extends StatefulWidget {
 
 class _RegisterState extends State<Register> {
   Image _profile = Image.asset(
-    'assets/profile_default.png',
+    AppStrings.kDefaultProfilePicPath,
     color: Colors.grey.shade300,
-    height: 95.0,
+    fit: BoxFit.fill,
   );
 
   TextEditingController _nameController = TextEditingController();
@@ -65,7 +65,15 @@ class _RegisterState extends State<Register> {
         );
         profileImage = File(pickedFile.path);
       } else {
-        print('No image selected.');
+        Fluttertoast.showToast(
+          msg: Messages.kNoProfile,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
       }
     });
   }
@@ -77,7 +85,7 @@ class _RegisterState extends State<Register> {
           Radius.circular(20.0),
         ),
       ),
-      backgroundColor: kAlertColor,
+      backgroundColor: AppColors.kAlertColor,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -85,7 +93,7 @@ class _RegisterState extends State<Register> {
             padding: const EdgeInsets.all(8.0),
             child: ListTile(
               title: Text(
-                'Capture Image',
+                ButtonText.kCaptureImage,
                 style: GoogleFonts.balooDa(
                   color: Colors.white,
                 ),
@@ -104,7 +112,7 @@ class _RegisterState extends State<Register> {
             padding: const EdgeInsets.all(8.0),
             child: ListTile(
               title: Text(
-                'Select From Gallery',
+                ButtonText.kSelectFromGallery,
                 style: GoogleFonts.balooDa(
                   color: Colors.white,
                 ),
@@ -143,9 +151,9 @@ class _RegisterState extends State<Register> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              'Create account',
+              AppPageTitles.kCreateNewAccount,
               style: GoogleFonts.balooDa(
-                color: kAppColor,
+                color: AppColors.kAppColor,
                 fontSize: 25.0,
               ),
             ),
@@ -162,7 +170,7 @@ class _RegisterState extends State<Register> {
                     ),
                     createTextFormField(
                       controller: _nameController,
-                      hintText: 'Name',
+                      hintText: HintText.kNameHint,
                       keyboardType: TextInputType.name,
                       obscureText: false,
                       focusNode: _nameFocus,
@@ -178,7 +186,7 @@ class _RegisterState extends State<Register> {
                     ),
                     createTextFormField(
                       controller: _emailController,
-                      hintText: 'Email Address',
+                      hintText: HintText.kEmailAddressHint,
                       keyboardType: TextInputType.emailAddress,
                       obscureText: false,
                       focusNode: _emailFocus,
@@ -194,7 +202,7 @@ class _RegisterState extends State<Register> {
                     ),
                     createTextFormField(
                       controller: _passwordController,
-                      hintText: 'Password',
+                      hintText: HintText.kPasswordHint,
                       keyboardType: TextInputType.name,
                       obscureText: true,
                       focusNode: _passwordFocus,
@@ -213,7 +221,7 @@ class _RegisterState extends State<Register> {
                         children: [
                           Checkbox(
                             value: termsAccepted,
-                            activeColor: kAppColor,
+                            activeColor: AppColors.kAppColor,
                             onChanged: (value) {
                               setState(() {
                                 termsAccepted = value;
@@ -230,14 +238,15 @@ class _RegisterState extends State<Register> {
                               child: RichText(
                                 softWrap: true,
                                 text: TextSpan(
-                                  text: 'By creating account, I agree to ',
+                                  text: AppStrings.kTnC1,
                                   style: GoogleFonts.balooDa(
                                     color: Colors.grey.shade400,
                                   ),
                                   children: [
                                     TextSpan(
-                                      text: 'Terms & Conditions',
-                                      style: TextStyle(color: kAppColor),
+                                      text: AppPageTitles.kTnC,
+                                      style:
+                                          TextStyle(color: AppColors.kAppColor),
                                       recognizer: new TapGestureRecognizer()
                                         ..onTap = () {
                                           FocusScope.of(context).unfocus();
@@ -276,7 +285,7 @@ class _RegisterState extends State<Register> {
   Widget createButton(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: termsAccepted ? kAppColor : Colors.grey,
+        color: termsAccepted ? AppColors.kAppColor : Colors.grey,
         borderRadius: BorderRadius.all(
           Radius.circular(10),
         ),
@@ -287,7 +296,7 @@ class _RegisterState extends State<Register> {
           overlayColor: MaterialStateProperty.all<Color>(Colors.transparent),
           elevation: MaterialStateProperty.all<double>(0),
           backgroundColor: termsAccepted
-              ? MaterialStateProperty.all<Color>(kAppColor)
+              ? MaterialStateProperty.all<Color>(AppColors.kAppColor)
               : MaterialStateProperty.all<Color>(Colors.grey),
         ),
         onPressed: termsAccepted
@@ -296,7 +305,7 @@ class _RegisterState extends State<Register> {
               }
             : null,
         child: Text(
-          'Continue',
+          ButtonText.kContinue,
           style: GoogleFonts.balooDa(
             fontSize: 16.0,
             color: Colors.white,
@@ -320,39 +329,45 @@ class _RegisterState extends State<Register> {
   }
 
   void register() async {
-    await _provider.uploadData(
+    await _provider
+        .uploadData(
       accountModel: AccountModel(
         email: _emailController.text,
         fullName: _nameController.text,
         password: _passwordController.text,
         profilePic: profileImage,
       ),
-    );
-    _nameController.clear();
-    _emailController.clear();
-    _passwordController.clear();
-    if (_provider.isSuccess) {
-      Navigator.pop(context);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => AccountCreated(),
-        ),
-      );
-    } else {
-      setState(() {
-        isButtonPressed = false;
-      });
-      Fluttertoast.showToast(
-        msg: _provider.message,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
-    }
+    )
+        .whenComplete(() {
+      if (_provider.isSuccess) {
+        Navigator.pop(context);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChangeNotifierProvider<AuthProvider>.value(
+              value: _provider,
+              child: AccountCreated(
+                email: _emailController.text,
+                fullName: _nameController.text,
+              ),
+            ),
+          ),
+        );
+      } else {
+        setState(() {
+          isButtonPressed = false;
+        });
+        Fluttertoast.showToast(
+          msg: _provider.message,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
+    });
   }
 
   Widget createTextFormField({
@@ -370,7 +385,7 @@ class _RegisterState extends State<Register> {
       child: Container(
         height: 60.0,
         decoration: BoxDecoration(
-          border: Border.all(color: kAppColor),
+          border: Border.all(color: AppColors.kAppColor),
           borderRadius: BorderRadius.all(
             Radius.circular(15),
           ),
@@ -418,7 +433,7 @@ class _RegisterState extends State<Register> {
                 boxShadow: [
                   BoxShadow(
                     blurRadius: 8,
-                    color: kAppColor,
+                    color: AppColors.kAppColor,
                     spreadRadius: 2,
                   )
                 ],

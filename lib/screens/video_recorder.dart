@@ -46,7 +46,15 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
         _onCameraSwitched(cameras[selectedCameraIdx]).then((void v) {});
       }
     }).catchError((err) {
-      print('Error: $err.code\nError Message: $err.message');
+      Fluttertoast.showToast(
+        msg: err.toString(),
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
     });
   }
 
@@ -78,7 +86,7 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () {
-        if (videoPath == null) Navigator.pop(context,null);
+        if (videoPath == null) Navigator.pop(context, null);
         Navigator.pop(
           context,
           VideoModel(
@@ -121,7 +129,7 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
             padding: const EdgeInsets.all(40.0),
             child: LinearProgressIndicator(
               backgroundColor: Colors.white,
-              valueColor: AlwaysStoppedAnimation<Color>(kAppColor),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.kAppColor),
               value: videoDuration,
             ),
           ),
@@ -178,14 +186,14 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              GestureDetector(
-                                onTap: () {
+                              TextButton(
+                                onPressed: () {
                                   setState(() {
                                     isVideoRecorded = false;
                                   });
                                 },
                                 child: Text(
-                                  'Retake',
+                                  ButtonText.kRetake,
                                   style: GoogleFonts.balooDa(
                                     fontSize: 20.0,
                                   ),
@@ -199,16 +207,16 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              'Topic',
+                              HintText.kTopicHint,
                               style: GoogleFonts.balooDa(
-                                color: kAppColor,
+                                color: AppColors.kAppColor,
                                 fontSize: 16.0,
                               ),
                             ),
                           ),
                           createTextFormField(
                             controller: _topicController,
-                            hintText: 'Topic',
+                            hintText: HintText.kTopicHint,
                             obscureText: false,
                             keyboardType: TextInputType.name,
                             focusNode: _topicFocus,
@@ -225,16 +233,16 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              'Title',
+                              HintText.kTitleHint,
                               style: GoogleFonts.balooDa(
-                                color: kAppColor,
+                                color: AppColors.kAppColor,
                                 fontSize: 16.0,
                               ),
                             ),
                           ),
                           createTextFormField(
                             controller: _titleController,
-                            hintText: 'Title',
+                            hintText: HintText.kTitleHint,
                             obscureText: false,
                             keyboardType: TextInputType.name,
                             focusNode: _titleFocus,
@@ -264,7 +272,7 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
   Widget createButton(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: kAppColor,
+        color: AppColors.kAppColor,
         borderRadius: BorderRadius.all(
           Radius.circular(10),
         ),
@@ -274,12 +282,13 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
         style: ButtonStyle(
             overlayColor: MaterialStateProperty.all<Color>(Colors.transparent),
             elevation: MaterialStateProperty.all<double>(0),
-            backgroundColor: MaterialStateProperty.all<Color>(kAppColor)),
+            backgroundColor:
+                MaterialStateProperty.all<Color>(AppColors.kAppColor)),
         onPressed: () {
           onValidate();
         },
         child: Text(
-          'Upload',
+          ButtonText.kUpload,
           style: GoogleFonts.balooDa(
             fontSize: 16.0,
             color: Colors.white,
@@ -302,7 +311,7 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
     return Container(
       height: 60.0,
       decoration: BoxDecoration(
-        border: Border.all(color: kAppColor),
+        border: Border.all(color: AppColors.kAppColor),
         borderRadius: BorderRadius.all(
           Radius.circular(15),
         ),
@@ -338,8 +347,8 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
   // Display 'Loading' text when the camera is still loading.
   Widget _cameraPreviewWidget() {
     if (controller == null || !controller.value.isInitialized) {
-      return const Text(
-        'Loading',
+      return Text(
+        HintText.kLoading,
         style: TextStyle(
           color: Colors.white,
           fontSize: 20.0,
@@ -384,8 +393,8 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
           height: 60.0,
           width: 55.0,
           decoration: BoxDecoration(
-            border: Border.all(color: kAppColor),
-            color: kAppColor,
+            border: Border.all(color: AppColors.kAppColor),
+            color: AppColors.kAppColor,
             borderRadius: BorderRadius.all(
               Radius.circular(5),
             ),
@@ -442,12 +451,13 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
 
       if (controller.value.hasError) {
         Fluttertoast.showToast(
-            msg: 'Camera error ${controller.value.errorDescription}',
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.CENTER,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.red,
-            textColor: Colors.white);
+          msg: controller.value.errorDescription,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
       }
     });
 
@@ -479,12 +489,13 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
 
       if (controller.value.hasError) {
         Fluttertoast.showToast(
-            msg: 'Camera error ${controller.value.errorDescription}',
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.CENTER,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.red,
-            textColor: Colors.white);
+          msg: controller.value.errorDescription,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
       }
     });
 
@@ -518,11 +529,11 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
     _startVideoRecording().then((String filePath) {
       if (filePath != null) {
         Fluttertoast.showToast(
-          msg: 'Recording video started',
+          msg: Messages.kRecordingStarted,
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
-          backgroundColor: kAlertColor,
+          backgroundColor: AppColors.kAlertColor,
           textColor: Colors.white,
         );
         timer = Timer.periodic(Duration(seconds: 1), (period) {
@@ -542,11 +553,11 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
     await _stopVideoRecording().then((_) {
       if (mounted) setState(() {});
       Fluttertoast.showToast(
-        msg: 'Video recorded to $videoPath',
+        msg: Messages.kVideoRecordedTo + videoPath,
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,
-        backgroundColor: kAlertColor,
+        backgroundColor: AppColors.kAlertColor,
         textColor: Colors.white,
       );
     });
@@ -554,7 +565,8 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
         ? await getExternalStorageDirectory()
         : await getApplicationDocumentsDirectory();
 
-    final String thumbnailDirPath = '${extDir.path}/Thumbnails';
+    final String thumbnailDirPath =
+        '${extDir.path}/${AppStrings.kThumbnailFolder}';
     await Directory(thumbnailDirPath).create(recursive: true);
     String thumbnailFilePath = await Thumbnails.getThumbnail(
       thumbnailFolder: thumbnailDirPath,
@@ -571,12 +583,13 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
   Future<String> _startVideoRecording() async {
     if (!controller.value.isInitialized) {
       Fluttertoast.showToast(
-          msg: 'Please wait',
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.grey,
-          textColor: Colors.white);
+        msg: Messages.kPleaseWait,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.grey,
+        textColor: Colors.white,
+      );
 
       return null;
     }
@@ -586,7 +599,8 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
     }
 
     final Directory appDirectory = await getApplicationDocumentsDirectory();
-    final String videoDirectory = '${appDirectory.path}/Videos';
+    final String videoDirectory =
+        '${appDirectory.path}/${AppStrings.kVideosFolder}';
     await Directory(videoDirectory).create(recursive: true);
     final String currentTime = DateTime.now().millisecondsSinceEpoch.toString();
     final String filePath = '$videoDirectory/$currentTime.mp4';
@@ -610,7 +624,7 @@ class _VideoRecorderExampleState extends State<VideoRecorderExample> {
       final Directory extDir = Platform.isAndroid
           ? await getExternalStorageDirectory()
           : await getApplicationDocumentsDirectory();
-      final String dirPath = '${extDir.path}/Movies';
+      final String dirPath = '${extDir.path}/${AppStrings.kMoviesFolder}';
       await Directory(dirPath).create(recursive: true);
       final String filePath = '$dirPath/educa_$_time.mp4';
 

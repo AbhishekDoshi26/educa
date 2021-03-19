@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:educa/constants.dart';
 
 import 'package:educa/models/video_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -56,9 +57,13 @@ class VideoProvider extends ChangeNotifier {
             'thumbnail_url': thumbnailDownloadURL
           }).then((value) {
             isSuccess = true;
-            message = 'Your video uploaded Successfully';
+            message = Messages.kVideoUploaded;
             notifyListeners();
-          }).catchError((error) => print("Failed to upload video: $error"));
+          }).catchError((error) {
+            isSuccess = false;
+            message = Messages.kServerError;
+            notifyListeners();
+          });
         });
       } else {
         throw FirebaseException(plugin: 'no-file');
@@ -67,9 +72,9 @@ class VideoProvider extends ChangeNotifier {
       print(e);
       isSuccess = false;
       if (e.code == 'no-file') {
-        message = 'No Video File uploaded!!';
+        message = Messages.kNoVideoUploaded;
       } else {
-        message = 'Server Error, Please try again later.';
+        message = Messages.kServerError;
       }
       notifyListeners();
     }

@@ -16,7 +16,7 @@ class _ChatPageState extends State<ChatPage> {
           'Chat',
           style: GoogleFonts.balooDa(
             fontSize: 25,
-            color: kAppColor,
+            color: AppColors.kAppColor,
           ),
         ),
       ),

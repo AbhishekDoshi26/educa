@@ -18,10 +18,10 @@ class TermsAndConditions extends StatelessWidget {
         child: Column(
           children: [
             Text(
-              'Terms & Conditions',
+              AppPageTitles.kTnC,
               style: GoogleFonts.balooDa(
                 fontSize: 25,
-                color: kAppColor,
+                color: AppColors.kAppColor,
               ),
             ),
             Expanded(
@@ -33,7 +33,10 @@ class TermsAndConditions extends StatelessWidget {
                     ),
                     Padding(
                       padding: const EdgeInsets.only(left: 30.0, right: 30.0),
-                      child: sampleText,
+                      child: Text(
+                        AppStrings.kTnCContent,
+                        textAlign: TextAlign.justify,
+                      ),
                     ),
                   ],
                 ),

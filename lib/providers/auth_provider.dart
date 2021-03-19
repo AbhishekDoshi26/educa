@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:educa/constants.dart';
 import 'package:educa/models/new_account_model.dart';
 import 'package:educa/models/update_profile_model.dart';
 import 'package:educa/models/user_model.dart';
@@ -22,18 +23,16 @@ class AuthProvider extends ChangeNotifier {
 
       //If no exception is thrown, setting message and isSuccess.
       isSuccess = true;
-      message = 'Login Successful';
+      message = Messages.kLoginSuccess;
     } on FirebaseAuthException catch (e) {
       //If exception is thrown, isSuccess to false
       isSuccess = false;
       if (e.code == 'user-not-found') {
         //User not registered
-        message = 'No user found for that email.';
-        print(message);
+        message = Messages.kNoUserFound;
       } else if (e.code == 'wrong-password') {
         //Wrong password entered
-        message = 'Wrong password provided for that user.';
-        print(message);
+        message = Messages.kWrongPassword;
       }
       notifyListeners();
     }
@@ -89,19 +88,25 @@ class AuthProvider extends ChangeNotifier {
               'full_name': updateProfileModel.fullName,
               'email': updateProfileModel.email,
               'profile_pic': downloadURL,
-            }).catchError((error) => print("Failed to add user: $error"));
+            }).catchError((error) {
+              isSuccess = false;
+              notifyListeners();
+            });
           });
         } else {
           users.doc(updateProfileModel.email).set({
             'full_name': updateProfileModel.fullName,
             'email': updateProfileModel.email,
             'profile_pic': downloadURL,
-          }).catchError((error) => print("Failed to add user: $error"));
+          }).catchError((error) {
+            isSuccess = false;
+            notifyListeners();
+          });
         }
       } on FirebaseException catch (e) {
         print(e);
         isSuccess = false;
-        message = 'Server Error, Please try again later.';
+        message = Messages.kServerError;
         notifyListeners();
       }
     }
@@ -122,7 +127,11 @@ class AuthProvider extends ChangeNotifier {
               'email': updateProfileModel.email,
               'profile_pic': downloadURL,
             },
-          ).catchError((error) => print("Failed to add user: $error"))
+          ).catchError((error) {
+            isSuccess = false;
+            message = Messages.kServerError;
+            notifyListeners();
+          })
         },
       );
     }
@@ -150,7 +159,11 @@ class AuthProvider extends ChangeNotifier {
               })
               .then((value) async =>
                   await _register(accountModel.email, accountModel.password))
-              .catchError((error) => print("Failed to add user: $error"));
+              .catchError((error) {
+                isSuccess = false;
+                message = Messages.kServerError;
+                notifyListeners();
+              });
         });
       } else {
         users
@@ -162,12 +175,15 @@ class AuthProvider extends ChangeNotifier {
             })
             .then((value) async =>
                 await _register(accountModel.email, accountModel.password))
-            .catchError((error) => print("Failed to add user: $error"));
+            .catchError((error) {
+              isSuccess = false;
+              message = Messages.kServerError;
+              notifyListeners();
+            });
       }
     } on FirebaseException catch (e) {
-      print(e);
       isSuccess = false;
-      message = 'Server Error, Please try again later.';
+      message = Messages.kServerError + e.toString();
       notifyListeners();
     }
   }
@@ -177,23 +193,20 @@ class AuthProvider extends ChangeNotifier {
     try {
       await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
-      message = 'User Registered Successfully';
+      message = Messages.kRegistrationSuccess;
       isSuccess = true;
       notifyListeners();
     } on FirebaseAuthException catch (e) {
       isSuccess = false;
       if (e.code == 'weak-password') {
-        message = 'The password provided is too weak.';
-        print('The password provided is too weak.');
+        message = Messages.kWeakPassword;
       } else if (e.code == 'email-already-in-use') {
-        message = 'The account already exists for that email.';
-        print('The account already exists for that email.');
+        message = Messages.kAlreadyExists;
       }
       notifyListeners();
     } catch (e) {
-      print(e);
       isSuccess = false;
-      message = 'Server error. Please try again later.';
+      message = Messages.kServerError;
       notifyListeners();
     }
     notifyListeners();
@@ -211,14 +224,27 @@ class AuthProvider extends ChangeNotifier {
     } on FirebaseAuthException catch (e) {
       isSuccess = false;
       if (e.code == 'user-not-found') {
-        message = 'No user found for that email.';
+        message = Messages.kNoUserFound;
         print(message);
       }
       notifyListeners();
     } catch (e) {
       print(e);
       isSuccess = false;
-      message = 'Server error. Please try again later.';
+      message = Messages.kServerError;
+      notifyListeners();
+    }
+  }
+
+  Future<void> logOut() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      isSuccess = true;
+      message = Messages.kLogOutSuccess;
+      notifyListeners();
+    } catch (e) {
+      isSuccess = false;
+      message = e.toString();
       notifyListeners();
     }
   }
