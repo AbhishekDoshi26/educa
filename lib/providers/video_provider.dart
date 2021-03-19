@@ -4,6 +4,7 @@ import 'package:educa/models/video_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+import 'package:video_compress/video_compress.dart';
 
 class VideoProvider extends ChangeNotifier {
   bool isSuccess = false;
@@ -16,9 +17,14 @@ class VideoProvider extends ChangeNotifier {
         FirebaseFirestore.instance.collection('videos');
     try {
       if (videoModel.videoFile != null) {
+        MediaInfo mediaInfo = await VideoCompress.compressVideo(
+          videoModel.videoFile.path,
+          includeAudio: true,
+          quality: VideoQuality.HighestQuality,
+        );
         await firebase_storage.FirebaseStorage.instance
             .ref('videos/${videoModel.videoFile.path.split('/').last}')
-            .putFile(videoModel.videoFile)
+            .putFile(mediaInfo.file)
             .then((value) async {
           await firebase_storage.FirebaseStorage.instance
               .ref(

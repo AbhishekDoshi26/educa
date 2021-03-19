@@ -21,6 +21,7 @@ dependencies:
   page_transition: ^1.1.7+6
   provider: ^5.0.0
   thumbnails: ^1.0.1
+  video_compress: ^2.1.1
   video_player: ^2.0.2
 
 dev_dependencies:
