@@ -17,8 +17,12 @@ class _FullScreenVideoPlayerState extends State<FullScreenVideoPlayer> {
   @override
   void initState() {
     _videoPlayerController = VideoPlayerController.network(widget.videoURL)
-      ..initialize();
-    _videoPlayerController.play();
+      ..initialize().then((value) {
+        setState(() {
+          _videoPlayerController.play();
+        });
+      });
+
     super.initState();
   }
 
@@ -42,37 +46,42 @@ class _FullScreenVideoPlayerState extends State<FullScreenVideoPlayer> {
         return;
       },
       child: Scaffold(
-        body: OrientationBuilder(
-          builder: (BuildContext context, Orientation orientation) {
-            return Stack(
-              children: [
-                VideoPlayer(_videoPlayerController),
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.fullscreen,
-                        color: Colors.white,
-                        size: 50.0,
+        body: !_videoPlayerController.value.isInitialized ||
+                _videoPlayerController.value.isBuffering
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : OrientationBuilder(
+                builder: (BuildContext context, Orientation orientation) {
+                  return Stack(
+                    children: [
+                      VideoPlayer(_videoPlayerController),
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.fullscreen,
+                              color: Colors.white,
+                              size: 50.0,
+                            ),
+                            onPressed: () {
+                              orientation == Orientation.portrait
+                                  ? SystemChrome.setPreferredOrientations([
+                                      DeviceOrientation.landscapeLeft,
+                                    ])
+                                  : SystemChrome.setPreferredOrientations([
+                                      DeviceOrientation.portraitUp,
+                                    ]);
+                            },
+                          ),
+                        ),
                       ),
-                      onPressed: () {
-                        orientation == Orientation.portrait
-                            ? SystemChrome.setPreferredOrientations([
-                                DeviceOrientation.landscapeLeft,
-                              ])
-                            : SystemChrome.setPreferredOrientations([
-                                DeviceOrientation.portraitUp,
-                              ]);
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
+                    ],
+                  );
+                },
+              ),
       ),
     );
   }
