@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:educa/constants.dart';
 import 'package:educa/models/new_account_model.dart';
+import 'package:educa/models/response_status_model.dart';
 import 'package:educa/models/update_profile_model.dart';
 import 'package:educa/models/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,14 +9,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class AuthProvider extends ChangeNotifier {
-  //Checks whether the operation was successfull or not
-  bool isSuccess = false;
-
-  //Gives message for success or failure
-  String message = '';
-
   //Login Functionality
-  Future<void> login(String email, String password) async {
+  Future<ResponseStatusModel> login(String email, String password) async {
+    //Checks whether the operation was successfull or not
+    bool isSuccess = false;
+
+    //Gives message for success or failure
+    String message = '';
     try {
       //Login with Email and Password
       await FirebaseAuth.instance
@@ -39,6 +39,10 @@ class AuthProvider extends ChangeNotifier {
       message = e.toString();
     }
     notifyListeners();
+    return ResponseStatusModel(
+      isSuccess: isSuccess,
+      message: message,
+    );
   }
 
   //Get User Data for profile and home screen
@@ -47,7 +51,6 @@ class AuthProvider extends ChangeNotifier {
       //Collection Name: users, Document Name: email
       DocumentSnapshot data =
           await FirebaseFirestore.instance.collection("users").doc(email).get();
-      isSuccess = true;
       notifyListeners();
       return UserModel(
         email: data.data()['email'].toString(),
@@ -55,22 +58,21 @@ class AuthProvider extends ChangeNotifier {
         profileUrl: data.data()['profile_pic'].toString(),
       );
     } catch (e) {
-      isSuccess = false;
-      message = e.toString();
       notifyListeners();
-
       //Sending empty model if exception is thrown
       return UserModel(
-        email: ' ',
-        fullName: ' ',
-        profileUrl: ' ',
+        email: 'email',
+        fullName: 'fullName',
+        profileUrl: 'profileUrl',
       );
     }
   }
 
   //Update Profile Functionality
-  Future<void> updateProfile(bool isProfilePicUpdated,
+  Future<ResponseStatusModel> updateProfile(bool isProfilePicUpdated,
       UpdateProfileModel updateProfileModel, String profileUrl) async {
+    bool isSuccess;
+    String message;
     String downloadURL = '';
     CollectionReference users = FirebaseFirestore.instance.collection('users');
 
@@ -86,20 +88,26 @@ class AuthProvider extends ChangeNotifier {
             downloadURL = await firebase_storage.FirebaseStorage.instance
                 .ref('profile/${updateProfileModel.email}.png')
                 .getDownloadURL();
-            users.doc(updateProfileModel.email).set({
+            await users.doc(updateProfileModel.email).set({
               'full_name': updateProfileModel.fullName,
               'email': updateProfileModel.email,
               'profile_pic': downloadURL,
+            }).then((value) {
+              isSuccess = true;
+              message = Messages.kProfileUpdated;
             }).catchError((error) {
               isSuccess = false;
               notifyListeners();
             });
           });
         } else {
-          users.doc(updateProfileModel.email).set({
+          await users.doc(updateProfileModel.email).set({
             'full_name': updateProfileModel.fullName,
             'email': updateProfileModel.email,
             'profile_pic': profileUrl,
+          }).then((value) {
+            isSuccess = true;
+            message = Messages.kProfileUpdated;
           }).catchError((error) {
             isSuccess = false;
             notifyListeners();
@@ -118,22 +126,31 @@ class AuthProvider extends ChangeNotifier {
         downloadURL = await firebase_storage.FirebaseStorage.instance
             .ref('profile/${updateProfileModel.email}.png')
             .getDownloadURL();
-      users.doc(updateProfileModel.email).set(
+      await users.doc(updateProfileModel.email).set(
         {
           'full_name': updateProfileModel.fullName,
           'email': updateProfileModel.email,
           'profile_pic': profileUrl,
         },
-      ).catchError((error) {
+      ).then((value) {
+        isSuccess = true;
+        message = Messages.kProfileUpdated;
+      }).catchError((error) {
         isSuccess = false;
         message = Messages.kServerError;
         notifyListeners();
       });
     }
+    return ResponseStatusModel(
+      isSuccess: isSuccess,
+      message: message,
+    );
   }
 
   //Uploads data during create new account and then calls _register() method
-  Future<void> uploadData({AccountModel accountModel}) async {
+  Future<ResponseStatusModel> uploadData({AccountModel accountModel}) async {
+    String message;
+    bool isSuccess;
     String downloadURL = '';
     CollectionReference users = FirebaseFirestore.instance.collection('users');
     try {
@@ -145,77 +162,70 @@ class AuthProvider extends ChangeNotifier {
           downloadURL = await firebase_storage.FirebaseStorage.instance
               .ref('profile/${accountModel.email}.png')
               .getDownloadURL();
-          users
-              .doc(accountModel.email)
-              .set({
-                'full_name': accountModel.fullName,
-                'email': accountModel.email,
-                'profile_pic': downloadURL,
-              })
-              .then((value) async =>
-                  await _register(accountModel.email, accountModel.password))
-              .catchError((error) {
-                isSuccess = false;
-                message = Messages.kServerError;
-                notifyListeners();
-              });
-        });
-      } else {
-        users
-            .doc(accountModel.email)
-            .set({
-              'full_name': accountModel.fullName,
-              'email': accountModel.email,
-              'profile_pic': downloadURL,
-            })
-            .then((value) async =>
-                await _register(accountModel.email, accountModel.password))
-            .catchError((error) {
+          await users.doc(accountModel.email).set({
+            'full_name': accountModel.fullName,
+            'email': accountModel.email,
+            'profile_pic': downloadURL,
+          }).then((value) async {
+            await _register(accountModel.email, accountModel.password)
+                .then((value) {
+              isSuccess = true;
+              message = Messages.kRegistrationSuccess;
+            }).catchError((error) {
               isSuccess = false;
               message = Messages.kServerError;
               notifyListeners();
             });
+          });
+        });
+      } else {
+        await users.doc(accountModel.email).set({
+          'full_name': accountModel.fullName,
+          'email': accountModel.email,
+          'profile_pic': downloadURL,
+        }).then((value) async {
+          await _register(accountModel.email, accountModel.password)
+              .then((value) {
+            isSuccess = true;
+            message = Messages.kRegistrationSuccess;
+          }).catchError((error) {
+            isSuccess = false;
+            message = Messages.kServerError;
+            notifyListeners();
+          });
+        });
       }
     } on FirebaseException catch (e) {
       isSuccess = false;
       message = Messages.kServerError + e.toString();
       notifyListeners();
     }
+    return ResponseStatusModel(
+      isSuccess: isSuccess,
+      message: message,
+    );
   }
 
   //This method is called after the data is uploaded during create new account.
   Future<void> _register(String email, String password) async {
-    try {
-      await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email, password: password);
-      message = Messages.kRegistrationSuccess;
-      isSuccess = true;
-      notifyListeners();
-    } on FirebaseAuthException catch (e) {
-      isSuccess = false;
-      if (e.code == 'weak-password') {
-        message = Messages.kWeakPassword;
-      } else if (e.code == 'email-already-in-use') {
-        message = Messages.kAlreadyExists;
-      }
-      notifyListeners();
-    } catch (e) {
-      isSuccess = false;
-      message = Messages.kServerError;
-      notifyListeners();
-    }
-    notifyListeners();
+    await FirebaseAuth.instance
+        .createUserWithEmailAndPassword(email: email, password: password);
   }
 
   //Method called on forgot password (in login screen) and reset password (in profile screen)
   //It sends a reset password link to the email id that the user enters (in forgot password)
   //Or it will send to the current logged in user (if clicked on reset password)
-  Future<void> forgotPassword(String email) async {
+  Future<ResponseStatusModel> forgotPassword(String email) async {
+    String message;
+    bool isSuccess;
     try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-      message = 'Password reset link sent to $email';
-      isSuccess = true;
-      notifyListeners();
+      await FirebaseAuth.instance
+          .sendPasswordResetEmail(email: email)
+          .then((value) {
+        message = 'Password reset link sent to $email';
+        isSuccess = true;
+        notifyListeners();
+      });
     } on FirebaseAuthException catch (e) {
       isSuccess = false;
       if (e.code == 'user-not-found') {
@@ -229,9 +239,15 @@ class AuthProvider extends ChangeNotifier {
       message = Messages.kServerError;
       notifyListeners();
     }
+    return ResponseStatusModel(
+      isSuccess: isSuccess,
+      message: message,
+    );
   }
 
-  Future<void> logOut() async {
+  Future<ResponseStatusModel> logOut() async {
+    bool isSuccess;
+    String message;
     try {
       await FirebaseAuth.instance.signOut();
       isSuccess = true;
@@ -242,5 +258,9 @@ class AuthProvider extends ChangeNotifier {
       message = e.toString();
       notifyListeners();
     }
+    return ResponseStatusModel(
+      isSuccess: isSuccess,
+      message: message,
+    );
   }
 }

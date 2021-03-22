@@ -68,7 +68,7 @@ class _HomePageState extends State<HomePage> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Hello, ${widget.name.split(' ')[0]}!',
+                      'Hello, ${widget.name}!',
                       style: GoogleFonts.balooDa(fontSize: 20.0),
                     ),
                   ),

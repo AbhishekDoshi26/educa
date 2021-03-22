@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:educa/constants.dart';
+import 'package:educa/models/response_status_model.dart';
 import 'package:educa/models/update_profile_model.dart';
 import 'package:educa/models/user_model.dart';
 import 'package:educa/providers/auth_provider.dart';
@@ -48,7 +49,7 @@ class _ProfilePageState extends State<ProfilePage> {
       });
       _authProvider = Provider.of<AuthProvider>(context);
       _userModel = await _authProvider.getUserData(widget.email);
-      if (_authProvider.isSuccess) {
+      if (_userModel.email != 'email') {
         if (_userModel.profileUrl == '')
           _profile = Image.asset(
             AppStrings.kDefaultProfilePicPath,
@@ -298,16 +299,8 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void logOut() async {
-    await _authProvider.logOut().then((value) {
-      Fluttertoast.showToast(
-        msg: _authProvider.message,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 1,
-        backgroundColor: AppColors.kAlertColor,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
+    ResponseStatusModel _responseStatusModel = await _authProvider.logOut();
+    if (_responseStatusModel.isSuccess) {
       Navigator.pop(context);
       Navigator.pushReplacement(
         context,
@@ -315,36 +308,37 @@ class _ProfilePageState extends State<ProfilePage> {
           builder: (context) => LoginScreen(),
         ),
       );
-    });
+    }
+    Fluttertoast.showToast(
+      msg: _responseStatusModel.message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 1,
+      backgroundColor:
+          _responseStatusModel.isSuccess ? AppColors.kAlertColor : Colors.red,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
   }
 
   void resetPassword() async {
     setState(() {
       isResetClicked = true;
     });
-    await _authProvider.forgotPassword(_emailController.text);
-    if (_authProvider.isSuccess) {
-      Fluttertoast.showToast(
-        msg: _authProvider.message,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 1,
-        backgroundColor: AppColors.kAlertColor,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
-      Navigator.pop(context);
-    } else {
-      Fluttertoast.showToast(
-        msg: _authProvider.message,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
-    }
+    ResponseStatusModel _responseStatusModel =
+        await _authProvider.forgotPassword(_emailController.text);
+    if (_responseStatusModel.isSuccess) Navigator.pop(context);
+
+    Fluttertoast.showToast(
+      msg: _responseStatusModel.message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 1,
+      backgroundColor:
+          _responseStatusModel.isSuccess ? AppColors.kAlertColor : Colors.red,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
   }
 
   void setProfileImage(ImageSource source) async {
@@ -428,7 +422,8 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void updateProfile() async {
-    await _authProvider.updateProfile(
+    ResponseStatusModel _responseStatusModel =
+        await _authProvider.updateProfile(
       isProfilePicUpdated,
       UpdateProfileModel(
         email: _emailController.text,
@@ -437,28 +432,18 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       _userModel.profileUrl,
     );
-    if (_authProvider.isSuccess) {
-      Navigator.pop(context);
-      Fluttertoast.showToast(
-        msg: Messages.kProfileUpdated,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 1,
-        backgroundColor: AppColors.kAlertColor,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
-    } else {
-      Fluttertoast.showToast(
-        msg: _authProvider.message,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 1,
-        backgroundColor: AppColors.kAlertColor,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
-    }
+    if (_responseStatusModel.isSuccess) Navigator.pop(context);
+
+    Fluttertoast.showToast(
+      msg: _responseStatusModel.message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 1,
+      backgroundColor:
+          _responseStatusModel.isSuccess ? AppColors.kAlertColor : Colors.red,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
   }
 
   Widget createProfilePicture(BuildContext context) {

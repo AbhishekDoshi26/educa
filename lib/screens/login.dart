@@ -1,4 +1,5 @@
 import 'package:educa/constants.dart';
+import 'package:educa/models/response_status_model.dart';
 import 'package:educa/models/user_model.dart';
 import 'package:educa/providers/auth_provider.dart';
 import 'package:educa/providers/video_provider.dart';
@@ -47,8 +48,9 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       isButtonPressed = true;
     });
-    await _provider.login(_emailController.text, _passwordController.text);
-    if (_provider.isSuccess) {
+    ResponseStatusModel _responseStatusModel =
+        await _provider.login(_emailController.text, _passwordController.text);
+    if (_responseStatusModel.isSuccess) {
       UserModel _userModel = await _provider.getUserData(_emailController.text);
       _emailController.clear();
       _passwordController.clear();
@@ -65,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
       Fluttertoast.showToast(
-        msg: _provider.message,
+        msg: _responseStatusModel.message,
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,
@@ -78,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
         isButtonPressed = false;
       });
       Fluttertoast.showToast(
-        msg: _provider.message,
+        msg: _responseStatusModel.message,
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,

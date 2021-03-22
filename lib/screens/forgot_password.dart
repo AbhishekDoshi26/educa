@@ -1,4 +1,5 @@
 import 'package:educa/constants.dart';
+import 'package:educa/models/response_status_model.dart';
 import 'package:educa/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -120,38 +121,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                   elevation: MaterialStateProperty.all<double>(0),
                   backgroundColor:
                       MaterialStateProperty.all<Color>(AppColors.kAppColor)),
-              onPressed: () async {
-                setState(() {
-                  isButtonPressed = true;
-                });
-                await _provider.forgotPassword(_emailController.text);
-                _emailController.clear();
-                if (_provider.isSuccess) {
-                  Fluttertoast.showToast(
-                    msg: _provider.message,
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: AppColors.kAlertColor,
-                    textColor: Colors.white,
-                    fontSize: 16.0,
-                  );
-                  Navigator.pop(context);
-                } else {
-                  setState(() {
-                    isButtonPressed = false;
-                  });
-                  Fluttertoast.showToast(
-                    msg: _provider.message,
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.red,
-                    textColor: Colors.white,
-                    fontSize: 16.0,
-                  );
-                }
-              },
+              onPressed: () => forgotPassword(),
               child: Text(
                 ButtonText.kContinue,
                 style: GoogleFonts.balooDa(
@@ -161,5 +131,39 @@ class _ForgotPasswordState extends State<ForgotPassword> {
               ),
             ),
           );
+  }
+
+  void forgotPassword() async {
+    setState(() {
+      isButtonPressed = true;
+    });
+    ResponseStatusModel _responseStatusModel =
+        await _provider.forgotPassword(_emailController.text);
+    _emailController.clear();
+    if (_responseStatusModel.isSuccess) {
+      Fluttertoast.showToast(
+        msg: _responseStatusModel.message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: AppColors.kAlertColor,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+      Navigator.pop(context);
+    } else {
+      setState(() {
+        isButtonPressed = false;
+      });
+      Fluttertoast.showToast(
+        msg: _responseStatusModel.message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    }
   }
 }

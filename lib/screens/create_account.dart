@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:educa/constants.dart';
 import 'package:educa/models/new_account_model.dart';
+import 'package:educa/models/response_status_model.dart';
 import 'package:educa/providers/auth_provider.dart';
 import 'package:educa/screens/account_created.dart';
 import 'package:educa/screens/terms_and_conditions.dart';
@@ -283,36 +284,41 @@ class _RegisterState extends State<Register> {
   }
 
   Widget createButton(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: termsAccepted ? AppColors.kAppColor : Colors.grey,
-        borderRadius: BorderRadius.all(
-          Radius.circular(10),
-        ),
-      ),
-      width: MediaQuery.of(context).size.width / 1.15,
-      child: ElevatedButton(
-        style: ButtonStyle(
-          overlayColor: MaterialStateProperty.all<Color>(Colors.transparent),
-          elevation: MaterialStateProperty.all<double>(0),
-          backgroundColor: termsAccepted
-              ? MaterialStateProperty.all<Color>(AppColors.kAppColor)
-              : MaterialStateProperty.all<Color>(Colors.grey),
-        ),
-        onPressed: termsAccepted
-            ? () {
-                onValidate();
-              }
-            : null,
-        child: Text(
-          ButtonText.kContinue,
-          style: GoogleFonts.balooDa(
-            fontSize: 16.0,
-            color: Colors.white,
-          ),
-        ),
-      ),
-    );
+    return isButtonPressed
+        ? Center(
+            child: CircularProgressIndicator(),
+          )
+        : Container(
+            decoration: BoxDecoration(
+              color: termsAccepted ? AppColors.kAppColor : Colors.grey,
+              borderRadius: BorderRadius.all(
+                Radius.circular(10),
+              ),
+            ),
+            width: MediaQuery.of(context).size.width / 1.15,
+            child: ElevatedButton(
+              style: ButtonStyle(
+                overlayColor:
+                    MaterialStateProperty.all<Color>(Colors.transparent),
+                elevation: MaterialStateProperty.all<double>(0),
+                backgroundColor: termsAccepted
+                    ? MaterialStateProperty.all<Color>(AppColors.kAppColor)
+                    : MaterialStateProperty.all<Color>(Colors.grey),
+              ),
+              onPressed: termsAccepted
+                  ? () {
+                      onValidate();
+                    }
+                  : null,
+              child: Text(
+                ButtonText.kContinue,
+                style: GoogleFonts.balooDa(
+                  fontSize: 16.0,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          );
   }
 
   void onValidate() {
@@ -329,45 +335,42 @@ class _RegisterState extends State<Register> {
   }
 
   void register() async {
-    await _provider
-        .uploadData(
+    ResponseStatusModel _responseStatusModel = await _provider.uploadData(
       accountModel: AccountModel(
         email: _emailController.text,
         fullName: _nameController.text,
         password: _passwordController.text,
         profilePic: profileImage,
       ),
-    )
-        .whenComplete(() {
-      if (_provider.isSuccess) {
-        Navigator.pop(context);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ChangeNotifierProvider<AuthProvider>.value(
-              value: _provider,
-              child: AccountCreated(
-                email: _emailController.text,
-                fullName: _nameController.text,
-              ),
+    );
+    if (_responseStatusModel.isSuccess) {
+      Navigator.pop(context);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChangeNotifierProvider<AuthProvider>.value(
+            value: _provider,
+            child: AccountCreated(
+              email: _emailController.text,
+              fullName: _nameController.text,
             ),
           ),
-        );
-      } else {
-        setState(() {
-          isButtonPressed = false;
-        });
-        Fluttertoast.showToast(
-          msg: _provider.message,
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 16.0,
-        );
-      }
-    });
+        ),
+      );
+    } else {
+      setState(() {
+        isButtonPressed = false;
+      });
+      Fluttertoast.showToast(
+        msg: _responseStatusModel.message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    }
   }
 
   Widget createTextFormField({
